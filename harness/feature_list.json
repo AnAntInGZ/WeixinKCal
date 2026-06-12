@@ -67,9 +67,10 @@
       "evidence": [
         "2026-06-12: 根据 `/Users/bytedance/Downloads/style4-vibrant-orange.html` 将注册、首页、上传三张手机稿转换为小程序页面：pages/onboarding/index、pages/dashboard/index、pages/upload/index。",
         "2026-06-12: app.wxss 使用模板中的活力橙颜色、渐变、圆角、阴影、字号和组件类名；未加入额外视觉设计。",
-        "2026-06-12: ./harness/init.sh 通过，smoke test 输出 `smoke ok: vibrant orange UI, account registration, profile plan`。"
+        "2026-06-12: ./harness/init.sh 通过，smoke test 输出 `smoke ok: vibrant orange UI, account registration, profile plan`。",
+        "2026-06-12: 修复微信开发者工具预览首页白屏；根因是 dashboard 头像在 WXML 内联 `linear-gradient(...)` 导致渲染异常，已迁移到 WXSS `.avatar-bubble`；开发者工具确认 `pages/dashboard/index` 渲染，点击底部加号可进入 `pages/upload/index`。"
       ],
-      "notes": "本轮只复刻用户提供的 HTML，不引入额外视觉设计；尚未用微信开发者工具人工截图比对。"
+      "notes": "本轮只复刻用户提供的 HTML，不引入额外视觉设计；微信开发者工具已确认首页和上传页不白屏，尚未做真机或像素级截图比对。"
     },
     {
       "id": "wx-002",

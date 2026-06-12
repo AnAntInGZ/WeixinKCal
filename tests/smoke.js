@@ -81,6 +81,19 @@ function verifyVibrantOrangeReplica() {
     'box-shadow: 0 12px 24px rgba(255, 92, 124, .4)'
   ])
 
+  const dashboardWxml = fs.readFileSync(
+    path.join(root, 'pages/dashboard/index.wxml'),
+    'utf8'
+  )
+  assert.ok(
+    !dashboardWxml.includes('linear-gradient'),
+    'dashboard WXML should not use inline linear-gradient; keep gradients in WXSS'
+  )
+  assert.ok(
+    dashboardWxml.includes('avatar-bubble'),
+    'dashboard WXML should use avatar-bubble for the header gradient avatar'
+  )
+
   assertFileContains('pages/onboarding/index.wxml', [
     '嗨，我是卡卡！',
     '告诉我你的小目标，',

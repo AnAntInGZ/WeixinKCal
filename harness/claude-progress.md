@@ -6,7 +6,7 @@
 - 标准启动路径：`./harness/init.sh`；需要预览界面时，用微信开发者工具打开仓库根目录。`npm run dev` 会打印这条启动提示。
 - 标准验证路径：`./harness/init.sh`
 - 当前最高优先级未完成功能：`wx-002` 记录每日每餐饮食
-- 当前 blocker：无。已知未验证项：活力橙 UI 已按 HTML 转为小程序页面并通过 smoke test，但尚未用微信开发者工具或真机人工截图比对。
+- 当前 blocker：无。已知未验证项：活力橙 UI 已按 HTML 转为小程序页面并通过 smoke test；微信开发者工具已确认首页和上传页不白屏，但尚未做真机或像素级截图比对。
 
 ## 会话记录
 
@@ -85,3 +85,29 @@
   - 未用微信开发者工具或真机做人工视觉比对。
   - `project.config.json` 与 `project.private.config.json` 在本轮开始前已有微信开发者工具生成/修改痕迹，本轮保留不动。
 - 下一步最佳动作：用微信开发者工具打开项目做三页视觉核对；确认无误后继续 `wx-002`，实现真实每日餐食记录数据流。
+
+### Session 004
+
+- 日期：2026-06-12
+- 本轮目标：定位并修复微信开发者工具预览白屏问题。
+- 已完成：
+  - 用微信开发者工具复现首页仅显示背景、内容不渲染的问题。
+  - 通过最小 WXML 替换和分段恢复，确认页面路径与项目配置正常，问题集中在 `pages/dashboard/index.wxml`。
+  - 定位根因：dashboard 头像节点把 `linear-gradient(...)` 写在 WXML 内联 style 中，微信开发者工具渲染异常。
+  - 将头像样式迁移到 `app.wxss` 的 `.avatar-bubble`，WXML 只保留 class，保持视觉不变。
+  - 更新 smoke test，防止 dashboard WXML 再次引入内联 `linear-gradient`。
+- 运行过的验证：
+  - `pwd`
+  - `git log --oneline -5`
+  - `git status --short`
+  - `npm test`：通过，输出 `smoke ok: vibrant orange UI, account registration, profile plan`。
+  - 微信开发者工具：编译后 `pages/dashboard/index` 首页完整渲染，不再白屏。
+  - 微信开发者工具：点击底部加号后进入 `pages/upload/index`，上传页内容出现在 Webview 树中。
+  - `./harness/init.sh`：通过，内部执行 `npm install` 和 `npm test`。
+- 已记录证据：`harness/feature_list.json` 中 `ui-001` evidence；本日志当前条目。
+- 提交记录：本轮收尾提交使用 `Fix WeChat preview blank screen`。
+- 更新过的文件或工件：`app.wxss`、`pages/dashboard/index.wxml`、`tests/smoke.js`、`harness/feature_list.json`、`harness/claude-progress.md`、`harness/quality-document.md`、`harness/session-handoff.md`
+- 已知风险或未解决问题：
+  - 尚未做真机预览或像素级截图比对。
+  - `project.config.json` 与 `project.private.config.json` 仍有微信开发者工具生成/修改痕迹，本轮不纳入提交。
+- 下一步最佳动作：继续 `wx-002`，实现真实每日餐食记录数据流。

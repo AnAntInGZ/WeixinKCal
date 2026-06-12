@@ -9,7 +9,7 @@
         <view class="sub">早上好呀 ☀️</view>
         <view class="h1">今天吃得不错！</view>
       </view>
-      <view style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#ff8a3d,#ff5c7c);display:flex;align-items:center;justify-content:center;font-size:24px">😋</view>
+      <view class="avatar-bubble">😋</view>
     </view>
     <view class="hero">
       <view class="hero-fire">🔥</view>

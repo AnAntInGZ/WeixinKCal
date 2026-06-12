@@ -2,19 +2,19 @@
 
 ## 当前已验证
 
-- 现在明确可用的部分：原生微信小程序骨架、首次本地账户创建、身体信息建档、BMI/BMR/每日建议热量计算；注册、首页、上传三页已按 `style4-vibrant-orange.html` 复刻。
-- 这轮实际跑过的验证：`npm test` 通过；`./harness/init.sh` 通过。
+- 现在明确可用的部分：原生微信小程序骨架、首次本地账户创建、身体信息建档、BMI/BMR/每日建议热量计算；注册、首页、上传三页已按 `style4-vibrant-orange.html` 复刻；微信开发者工具里首页不再白屏，底部加号可进入上传页。
+- 这轮实际跑过的验证：`npm test` 通过；微信开发者工具确认 `pages/dashboard/index` 渲染、`pages/upload/index` 可进入；`./harness/init.sh` 通过。
 
 ## 本轮改动
 
-- 新增了哪些代码或行为：`pages/onboarding`、`pages/dashboard` 改为活力橙模板 UI；新增 `pages/upload` 上传页；底部加号可进入上传页。
-- 基础设施或 harness 发生了哪些变化：`tests/smoke.js` 增加模板关键文案和样式令牌检查；`feature_list.json` 增加并完成 `ui-001`。
+- 新增了哪些代码或行为：修复 dashboard 白屏；头像渐变从 WXML 内联 style 迁移到 `app.wxss` 的 `.avatar-bubble`，视觉保持活力橙模板效果。
+- 基础设施或 harness 发生了哪些变化：`tests/smoke.js` 增加 dashboard WXML 防回归检查；`feature_list.json`、`claude-progress.md`、`quality-document.md` 记录白屏根因和验证证据。
 
 ## 仍损坏或未验证
 
 - 已知缺陷：暂无已复现缺陷。
-- 未验证路径：未用微信开发者工具或真机人工截图比对 UI。
-- 下一轮会话需要注意的风险：当前 UI 优先静态复刻模板；真实餐食记录数据流仍属于 `wx-002`。
+- 未验证路径：未做真机或像素级截图比对；注册页本轮未在开发者工具中重新手动复核。
+- 下一轮会话需要注意的风险：当前 UI 优先静态复刻模板；真实餐食记录数据流仍属于 `wx-002`；复杂渐变样式放在 WXSS 中，不要再写回 WXML 内联 style。
 
 ## 下一步最佳动作
 
