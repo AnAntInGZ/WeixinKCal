@@ -201,6 +201,7 @@ func (s *APIServer) listMeals(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
+	records = normalizeMealRecords(records)
 	data := DailyData{
 		DateKey: req.DateKey,
 		Records: records,

@@ -5,10 +5,10 @@
 - 仓库根目录：`/Users/bytedance/bytedance/WeixinKCal`
 - 标准启动路径：`./harness/init.sh`；需要预览界面时，用微信开发者工具打开仓库根目录。`npm run dev` 会打印这条启动提示。
 - 标准验证路径：`./harness/init.sh`
-- 当前最高优先级未完成功能：`wx-005` 升级账户为跨设备可恢复账户；云托管 Go 服务和小程序端 callContainer 接入已完成本地验证，仍需部署后做清缓存恢复验证。
-- 当前 blocker：`wx-005` 还没有在微信云托管上完成部署和云端端到端验证；本地尝试进入 `cloud.weixin.qq.com/cloudrun/console` 时 Computer Use 被该 URL 的安全策略阻止，部署需要用户手动操作控制台或提供可用的非浏览器部署方式；`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作。
+- 当前最高优先级未完成功能：`wx-005` 升级账户为跨设备可恢复账户；云托管公网域名已接入小程序端，仍需重新部署最新后端后做清缓存恢复验证。
+- 当前 blocker：`wx-005` 尚未完成“清缓存后从云端恢复档案和餐食”的端到端验证；公网服务当前可达，但云端运行的后端仍会把空餐食列表返回为 `records:null`，需要部署本地最新代码；`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作。
 - 移动端 UI 当前状态：微信开发者工具 iPhone 12/13 85% 下，首页和记录页不需要整页拖动；记录页主操作都在首屏；食物数字输入不截断；保存后可回到首页。
-- 云端数据当前状态：新增 `server/` Go 服务，按微信云托管模板监听 HTTP，使用 MySQL 环境变量建库建表；MySQL DSN 已使用 `mysql.NewConfig()` 保留 driver 默认认证兼容配置，允许 `mysql_native_password`；小程序端使用 `resourceEnv=prod-d8ghbq8xea378972b` 与 `X-WX-SERVICE=golang-24re-001` 调用云托管，未把数据库密码写入仓库。
+- 云端数据当前状态：新增 `server/` Go 服务，按微信云托管模板监听 HTTP，使用 MySQL 环境变量建库建表；MySQL DSN 已使用 `mysql.NewConfig()` 保留 driver 默认认证兼容配置，允许 `mysql_native_password`；小程序端优先用 `wx.request` 调用 `https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com`，`callContainer` 只作无 `wx.request` 能力时的备用入口；未把数据库密码写入仓库。
 
 ## 会话记录
 
@@ -251,3 +251,32 @@
   - 仍未完成清空本地缓存后的云端恢复端到端验证。
   - `project.config.json` 仍有微信开发者工具本地改动，本轮不纳入提交。
 - 下一步最佳动作：推送修复提交到 GitHub，用户重新部署 Go 服务；若启动成功，再用微信开发者工具验证建档、保存餐食和云端恢复。
+
+### Session 010
+
+- 日期：2026-06-12
+- 本轮目标：用户完成云端部署后，本地调试微信开发者工具里的小程序前后端联调，并接入云托管公网服务域名。
+- 已完成：
+  - 确认此前小程序端只配置了 `resourceEnv + X-WX-SERVICE` 的 `callContainer` 入口，缺少用户提供的公网服务域名。
+  - 将小程序端 `utils/cloud.js` 改为优先通过 `wx.request` 调用 `https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com`，并设置 5 秒超时；`callContainer` 只保留为无 `wx.request` 能力时的备用入口。
+  - 通过公网 `GET /healthz` 验证云端服务在线，返回 `{"code":0,"data":{"status":"ok"}}`。
+  - 通过公网 `POST /api/account` 验证云端 MySQL 写入链路可用，返回 `local:debug_local_20260612` 账户。
+  - 发现云端当前版本对空餐食列表返回 `records:null`，导致前端旧逻辑 `daily.records.map` 报错；前端已对 `daily.records` 和 `record.items` 做数组容错。
+  - 后端本地代码已新增 `normalizeMealRecords`，确保最新版本部署后空餐食列表序列化为 `[]`；新增 Go 单测防回归。
+  - 修复 harness 在沙箱里访问系统 Go build cache 失败的问题，将 Go cache 指向仓库内 `.cache/go-build`，并忽略 `.cache/`。
+- 运行过的验证：
+  - `curl -L https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com/healthz`：通过，云端返回健康状态。
+  - `curl -L -X POST ... /api/account`：通过，云端返回账户数据。
+  - `curl -L -X POST ... /api/meals/list`：当前云端仍返回 `records:null`，证明云端还未部署本地最新空数组修复。
+  - `npm test`：通过，输出 `smoke ok: vibrant orange UI, account registration, meal logging, cloud backend wiring`。
+  - `./harness/init.sh`：通过，内部执行 npm smoke 和 Go 单测。
+  - 微信开发者工具：刷新后 Dashboard 可访问树渲染出首页内容；控制台不再出现 `Invalid host`，也不再出现 `records.map` 报错；仍可见开发者工具/基础库自身的 `Error: timeout` 噪声。
+- 已记录证据：`harness/feature_list.json` 中 `wx-005` 新增公网域名、API 联调和空数组修复证据；本日志当前条目。
+- 提交记录：本轮收尾提交使用 `Use Cloud Run public service domain`。
+- 更新过的文件或工件：`.gitignore`、`harness/init.sh`、`utils/cloud.js`、`pages/dashboard/index.js`、`server/README.md`、`server/handlers.go`、`server/models.go`、`server/main_test.go`、`tests/smoke.js`、`harness/feature_list.json`、`harness/claude-progress.md`、`harness/session-handoff.md`
+- 已知风险或未解决问题：
+  - 云端当前运行版本仍返回 `records:null`；需要重新部署最新后端代码后再验证 `/api/meals/list` 返回 `records:[]`。
+  - 小程序发布前需要在微信公众平台/小程序后台把 `golang-24re-269724-9-1309913757.sh.run.tcloudbase.com` 加入 request 合法域名。
+  - 仍未完成清空本地缓存后的云端恢复端到端验证。
+  - `project.config.json` 仍有微信开发者工具本地改动，本轮不纳入提交。
+- 下一步最佳动作：提交并推送本轮域名接入和空数组修复；用户重新部署云托管后，用 `/api/meals/list` 确认 `records:[]`，再在微信开发者工具里跑建档 -> 记录餐食 -> 清缓存 -> 恢复数据。

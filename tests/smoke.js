@@ -263,10 +263,20 @@ function verifyMealRecordBackend() {
 function verifyCloudBackendWiring() {
   const cloud = require('../utils/cloud')
 
+  assert.strictEqual(
+    cloud.CLOUD_BASE_URL,
+    'https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com'
+  )
+  assert.strictEqual(cloud.CLOUD_REQUEST_TIMEOUT_MS, 5000)
+  assert.strictEqual(cloud.CLOUD_RESOURCE_APPID, 'wx2ba486d512c00ac6')
   assert.strictEqual(cloud.CLOUD_RESOURCE_ENV, 'prod-d8ghbq8xea378972b')
   assert.strictEqual(cloud.CLOUD_SERVICE_NAME, 'golang-24re-001')
 
   assertFileContains('utils/cloud.js', [
+    'CLOUD_BASE_URL',
+    'CLOUD_REQUEST_TIMEOUT_MS',
+    'wx.request',
+    'resourceAppid: CLOUD_RESOURCE_APPID',
     'wx.cloud.init',
     'wx.cloud.Cloud',
     'callContainer',
@@ -289,7 +299,8 @@ function verifyCloudBackendWiring() {
   ])
   assertFileContains('pages/dashboard/index.js', [
     'fetchCloudDaily',
-    'replaceMealsForDate'
+    'replaceMealsForDate',
+    'Array.isArray(daily.records)'
   ])
   assertFileContains('pages/upload/index.js', [
     'saveCloudMeal',

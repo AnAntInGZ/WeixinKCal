@@ -20,7 +20,8 @@ if [ -f package.json ]; then
 
   if [ -f server/go.mod ]; then
     echo "==> 运行 Go 云托管验证"
-    (cd server && go test ./...)
+    mkdir -p "$ROOT_DIR/.cache/go-build"
+    (cd server && GOCACHE="$ROOT_DIR/.cache/go-build" go test ./...)
   fi
 else
   START_CMD=(echo "No app start command yet; harness self-check passed.")

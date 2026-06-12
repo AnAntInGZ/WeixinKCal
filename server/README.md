@@ -6,8 +6,11 @@
 
 小程序端配置：
 
+- `CLOUD_BASE_URL`: `https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com`
 - `resourceEnv`: `prod-d8ghbq8xea378972b`
 - `X-WX-SERVICE`: `golang-24re-001`
+
+小程序端优先用 `wx.request` 调用公网域名；`callContainer` 只作为没有 `wx.request` 能力时的备用入口。发布前需要把该域名加入小程序 request 合法域名。
 
 服务端环境变量：
 

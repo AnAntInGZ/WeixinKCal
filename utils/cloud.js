@@ -1,5 +1,8 @@
 const CLOUD_RESOURCE_ENV = 'prod-d8ghbq8xea378972b'
+const CLOUD_RESOURCE_APPID = 'wx2ba486d512c00ac6'
 const CLOUD_SERVICE_NAME = 'golang-24re-001'
+const CLOUD_BASE_URL = 'https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com'
+const CLOUD_REQUEST_TIMEOUT_MS = 5000
 
 let cloudInstance = null
 let initPromise = null
@@ -7,6 +10,10 @@ let wxCloudInitPromise = null
 
 function canUseCloud() {
   return typeof wx !== 'undefined' && wx.cloud
+}
+
+function canUseRequest() {
+  return typeof wx !== 'undefined' && wx.request
 }
 
 function initWxCloud() {
@@ -29,6 +36,7 @@ function getCloudInstance() {
 
   if (!cloudInstance) {
     cloudInstance = new wx.cloud.Cloud({
+      resourceAppid: CLOUD_RESOURCE_APPID,
       resourceEnv: CLOUD_RESOURCE_ENV
     })
   }
@@ -57,7 +65,32 @@ function parseResponseData(data) {
   return data || {}
 }
 
+function buildCloudURL(path) {
+  return `${CLOUD_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`
+}
+
+function requestCloudHTTP(path, data, method) {
+  return new Promise((resolve, reject) => {
+    wx.request({
+      url: buildCloudURL(path),
+      method,
+      data,
+      timeout: CLOUD_REQUEST_TIMEOUT_MS,
+      header: {
+        'content-type': 'application/json'
+      },
+      success: resolve,
+      fail: reject
+    })
+  })
+}
+
 async function callCloud(path, data = {}, method = 'POST') {
+  if (canUseRequest()) {
+    const response = await requestCloudHTTP(path, data, method)
+    return parseCloudResponse(response)
+  }
+
   await initWxCloud()
   const request = {
     path,
@@ -68,23 +101,35 @@ async function callCloud(path, data = {}, method = 'POST') {
       'content-type': 'application/json'
     }
   }
-  let response
 
   try {
     const cloud = await getCloudInstance()
-    response = await cloud.callContainer(request)
+    const response = await cloud.callContainer(request)
+    return parseCloudResponse(response)
   } catch (error) {
     if (!wx.cloud.callContainer) {
       throw error
     }
-    response = await wx.cloud.callContainer({
-      ...request,
-      config: {
-        env: CLOUD_RESOURCE_ENV
-      }
-    })
+    if (canUseCloudInstance()) {
+      throw error
+    }
   }
 
+  const response = await wx.cloud.callContainer({
+    ...request,
+    config: {
+      env: CLOUD_RESOURCE_ENV
+    }
+  })
+
+  return parseCloudResponse(response)
+}
+
+function canUseCloudInstance() {
+  return canUseCloud() && wx.cloud.Cloud
+}
+
+function parseCloudResponse(response) {
   const body = parseResponseData(response.data)
 
   if (response.statusCode && response.statusCode >= 400) {
@@ -132,6 +177,9 @@ function fetchCloudDaily(account, dateKey, targetCalories) {
 }
 
 module.exports = {
+  CLOUD_BASE_URL,
+  CLOUD_REQUEST_TIMEOUT_MS,
+  CLOUD_RESOURCE_APPID,
   CLOUD_RESOURCE_ENV,
   CLOUD_SERVICE_NAME,
   canUseCloud,

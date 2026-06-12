@@ -73,6 +73,13 @@ type DailyData struct {
 	Summary DailySummary `json:"summary"`
 }
 
+func normalizeMealRecords(records []MealRecord) []MealRecord {
+	if records == nil {
+		return []MealRecord{}
+	}
+	return records
+}
+
 func nowISO() string {
 	return time.Now().UTC().Format(time.RFC3339)
 }

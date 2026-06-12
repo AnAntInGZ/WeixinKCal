@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/go-sql-driver/mysql"
@@ -75,5 +77,19 @@ func TestSummarizeMeals(t *testing.T) {
 	}
 	if summary.ProgressPercent != 54 {
 		t.Fatalf("unexpected progress: %d", summary.ProgressPercent)
+	}
+}
+
+func TestDailyDataEmptyRecordsMarshalAsArray(t *testing.T) {
+	payload, err := json.Marshal(DailyData{
+		DateKey: "2026-06-12",
+		Records: normalizeMealRecords(nil),
+		Summary: SummarizeMeals(nil, 2000),
+	})
+	if err != nil {
+		t.Fatalf("Marshal returned error: %v", err)
+	}
+	if !strings.Contains(string(payload), `"records":[]`) {
+		t.Fatalf("expected empty records array, got %s", payload)
 	}
 }

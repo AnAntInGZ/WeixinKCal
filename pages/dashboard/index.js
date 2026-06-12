@@ -9,7 +9,8 @@ const {
 } = require('../../utils/meal')
 
 function mealDetail(record) {
-  return record.items.map((item) => item.name).join(' · ')
+  const items = Array.isArray(record.items) ? record.items : []
+  return items.map((item) => item.name).join(' · ')
 }
 
 function mealViewModel(record) {
@@ -45,10 +46,11 @@ Page({
   },
 
   renderDaily(dateKey, daily) {
+    const records = Array.isArray(daily.records) ? daily.records : []
     this.setData({
       dateKey,
       summary: daily.summary,
-      meals: daily.records.map(mealViewModel)
+      meals: records.map(mealViewModel)
     })
   },
 

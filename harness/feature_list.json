@@ -178,9 +178,11 @@
         "2026-06-12: 新增小程序端 utils/cloud.js，使用 resourceEnv=prod-d8ghbq8xea378972b 和 X-WX-SERVICE=golang-24re-001 通过 callContainer 调用云托管；启动同步账户、建档保存/恢复、首页按日拉取、餐食保存均已接入，并保留本地兜底。",
         "2026-06-12: ./harness/init.sh 通过，内部执行 npm test 和 server/go test ./...；smoke test 覆盖云托管配置、前端调用入口和 Go 服务骨架。",
         "2026-06-12: 阅读微信云托管 quickstart、Go 自定义部署和小程序访问云托管服务官方文档后，按文档补齐 wx.cloud.init({}) 初始化和 wx.cloud.callContainer({ config: { env } }) 兜底调用；微信开发者工具确认基础库 3.16.1、页面渲染正常，但云调用仍返回 Invalid host，说明云托管服务入口尚未部署或未就绪。",
-        "2026-06-12: 修复云托管启动报错 `this user requires mysql native password authentication`；根因是手写 mysql.Config 绕过 go-sql-driver/mysql 默认值，导致 AllowNativePasswords 为 false；已改用 mysql.NewConfig() 构造 DSN，并新增 TestMySQLDSNAllowsNativePasswords 防回归。"
+        "2026-06-12: 修复云托管启动报错 `this user requires mysql native password authentication`；根因是手写 mysql.Config 绕过 go-sql-driver/mysql 默认值，导致 AllowNativePasswords 为 false；已改用 mysql.NewConfig() 构造 DSN，并新增 TestMySQLDSNAllowsNativePasswords 防回归。",
+        "2026-06-12: 接入云托管公网服务域名 `https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com`，小程序端优先使用 wx.request 调用公网域名，保留 callContainer 作为无 wx.request 能力时的备用入口；公网 `/healthz` 返回 status ok，公网 `/api/account` 可写入并返回账户。",
+        "2026-06-12: 本地调试发现云端当前版本对空餐食列表返回 `records:null`；前端 dashboard 已对 `daily.records` 和 `record.items` 做数组容错，后端本地代码已新增 normalizeMealRecords 确保最新版本部署后空列表返回 `records:[]`，并新增 Go 单测防回归；./harness/init.sh 通过。"
       ],
-      "notes": "已确认方案为微信云托管 Go 服务 + 绑定 MySQL；代码和本地验证已完成，但尚未部署到云托管并用同一微信身份完成清空本地缓存后的云端恢复验证，所以不能标记 passing。云托管控制台需要通过浏览器手动上传 server/ 目录；本轮 Computer Use 在 cloud.weixin.qq.com 控制台 URL 被安全策略阻止，未能代执行部署。"
+      "notes": "已确认方案为微信云托管 Go 服务 + 绑定 MySQL + 公网服务域名；公网服务已可访问，但云端仍需要重新部署本地最新后端代码以修复空餐食列表 records:null；还没有用同一微信身份完成清空本地缓存后的云端恢复验证，所以不能标记 passing。发布前需要把 golang-24re-269724-9-1309913757.sh.run.tcloudbase.com 加入小程序 request 合法域名。"
     },
     {
       "id": "wx-006",
