@@ -4,51 +4,48 @@
     <text>● ● ●　🔋</text>
   </view>
   <view class="pad" style="padding-top:8px">
-    <view class="h1">记录午餐 🍽️</view>
+    <view class="h1">记录{{mealTypeLabels[mealTypeIndex]}} 🍽️</view>
     <view class="sub">拍张照，卡卡帮你算热量~</view>
+    <view class="form-row">
+      <view class="form-field">
+        <text class="field-label">日期</text>
+        <picker mode="date" value="{{form.dateKey}}" bindchange="handleDateChange">
+          <view class="select-box">{{form.dateKey}}</view>
+        </picker>
+      </view>
+      <view class="form-field">
+        <text class="field-label">餐次</text>
+        <picker mode="selector" range="{{mealTypeLabels}}" value="{{mealTypeIndex}}" bindchange="handleMealTypeChange">
+          <view class="select-box">{{mealTypeLabels[mealTypeIndex]}}</view>
+        </picker>
+      </view>
+    </view>
     <view class="cam">
       <view class="ci">📸</view>
       <view>点我拍食物</view>
     </view>
-    <view class="fi">
-      <view class="e">🍗</view>
+    <view class="fi" wx:for="{{form.items}}" wx:key="index">
+      <view class="e">{{item.emoji}}</view>
       <view class="info">
-        <view class="n">鸡胸肉</view>
-        <view class="p">165 kcal / 100g</view>
+        <input class="n food-input" value="{{item.name}}" placeholder="食物名称" data-index="{{index}}" data-field="name" bindinput="handleItemInput" />
+        <view class="food-meta">
+          <input class="mini-input" type="number" value="{{item.kcalPer100g}}" data-index="{{index}}" data-field="kcalPer100g" bindinput="handleItemInput" />
+          <text class="p">kcal / 100g · 小计 {{item.calories}}</text>
+        </view>
       </view>
       <view class="qty">
-        <button class="qbtn">−</button>
-        <text class="qv">150g</text>
-        <button class="qbtn">+</button>
+        <button class="qbtn" data-index="{{index}}" data-delta="-10" bindtap="changeAmount">−</button>
+        <input class="qv qinput" type="number" value="{{item.amountGram}}" data-index="{{index}}" data-field="amountGram" bindinput="handleItemInput" />
+        <text class="gram">g</text>
+        <button class="qbtn" data-index="{{index}}" data-delta="10" bindtap="changeAmount">+</button>
       </view>
+      <button class="remove-btn" data-index="{{index}}" bindtap="removeFood">×</button>
     </view>
-    <view class="fi">
-      <view class="e">🍚</view>
-      <view class="info">
-        <view class="n">糙米饭</view>
-        <view class="p">112 kcal / 100g</view>
-      </view>
-      <view class="qty">
-        <button class="qbtn">−</button>
-        <text class="qv">200g</text>
-        <button class="qbtn">+</button>
-      </view>
-    </view>
-    <view class="fi">
-      <view class="e">🥦</view>
-      <view class="info">
-        <view class="n">西兰花</view>
-        <view class="p">34 kcal / 100g</view>
-      </view>
-      <view class="qty">
-        <button class="qbtn">−</button>
-        <text class="qv">100g</text>
-        <button class="qbtn">+</button>
-      </view>
-    </view>
+    <button class="add-food" bindtap="addFood">+ 添加食物</button>
+    <textarea class="note-input" value="{{form.note}}" placeholder="备注，例如少油、去皮、饭后水果" bindinput="handleNoteInput"></textarea>
     <view class="total">
       <view class="tl">这一餐总共 🔥</view>
-      <view class="tv">560</view>
+      <view class="tv">{{totalCalories}}</view>
     </view>
     <button class="btn" bindtap="saveMeal">存好啦 ✓</button>
     <view style="height:30px"></view>

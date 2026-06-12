@@ -1,6 +1,6 @@
 const GENDER_OPTIONS = [
-  { label: '女性', value: 'female' },
-  { label: '男性', value: 'male' },
+  { label: '男生', value: 'male' },
+  { label: '女生', value: 'female' },
   { label: '其他', value: 'other' }
 ]
 

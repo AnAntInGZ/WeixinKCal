@@ -98,10 +98,10 @@ function verifyVibrantOrangeReplica() {
     '嗨，我是卡卡！',
     '告诉我你的小目标，',
     '我帮你算好每天能吃多少~',
-    '男生',
-    '女生',
-    '178',
-    '74',
+    'wx:for="{{genderOptions}}"',
+    '年龄 · 身高 · 体重',
+    'bindinput="handleInput"',
+    'bindchange="handleActivityChange"',
     '开启计划 🚀'
   ])
 
@@ -109,21 +109,23 @@ function verifyVibrantOrangeReplica() {
     '早上好呀 ☀️',
     '今天吃得不错！',
     '还可以吃 🍽️',
-    '612',
-    '已摄入 1238 / 目标 1850 kcal',
+    '{{summary.remainingCalories}}',
+    '已摄入 {{summary.totalCalories}} / 目标 {{summary.targetCalories}} kcal',
     '今日餐食 🍱',
-    '面包 · 鸡蛋 · 牛奶',
-    '鸡胸沙拉 · 糙米饭',
-    '苹果 · 无糖酸奶'
+    'wx:for="{{meals}}"',
+    '点下面的 + 记录第一餐'
   ])
 
   assertFileContains('pages/upload/index.wxml', [
-    '记录午餐 🍽️',
+    '记录{{mealTypeLabels[mealTypeIndex]}} 🍽️',
     '拍张照，卡卡帮你算热量~',
+    'mode="date"',
+    'mode="selector"',
     '点我拍食物',
-    '鸡胸肉',
-    '糙米饭',
-    '西兰花',
+    'placeholder="食物名称"',
+    'kcal / 100g · 小计 {{item.calories}}',
+    '+ 添加食物',
+    '备注，例如少油、去皮、饭后水果',
     '这一餐总共 🔥',
     '存好啦 ✓'
   ])
@@ -164,8 +166,75 @@ function verifyFirstRunAccountAndProfile() {
   assert.deepStrictEqual(getProfile(storage), result.profile)
 }
 
+function verifyMealRecordBackend() {
+  const { ensureAccount } = require('../utils/account')
+  const {
+    MEAL_RECORDS_KEY,
+    addMealRecord,
+    deleteMealRecord,
+    formatDateKey,
+    listMealsByDate,
+    summarizeMeals,
+    updateMealRecord
+  } = require('../utils/meal')
+
+  const storage = createFakeStorage()
+  const account = ensureAccount(storage, {
+    now: new Date('2026-06-12T00:00:00.000Z'),
+    random: () => 0.654321
+  })
+  const dateKey = formatDateKey(new Date('2026-06-12T08:00:00.000Z'))
+  const record = addMealRecord(
+    storage,
+    account,
+    {
+      dateKey,
+      mealType: 'lunch',
+      note: '少油',
+      items: [
+        { name: '鸡胸肉', amountGram: 150 },
+        { name: '糙米饭', amountGram: 200 },
+        { name: '西兰花', amountGram: 100 }
+      ]
+    },
+    {
+      now: new Date('2026-06-12T04:00:00.000Z'),
+      random: () => 0.111111
+    }
+  )
+
+  assert.strictEqual(record.id, 'meal_1781236800000_111111')
+  assert.strictEqual(record.totalCalories, 506)
+  assert.strictEqual(record.totalProteinG, 54.5)
+  assert.strictEqual(storage.getStorageSync(MEAL_RECORDS_KEY).length, 1)
+  assert.strictEqual(listMealsByDate(storage, dateKey, account.id).length, 1)
+
+  const summary = summarizeMeals([record], 1550)
+  assert.strictEqual(summary.totalCalories, 506)
+  assert.strictEqual(summary.remainingCalories, 1044)
+  assert.strictEqual(summary.progressPercent, 33)
+
+  const updated = updateMealRecord(
+    storage,
+    record.id,
+    {
+      mealType: 'dinner',
+      items: [{ name: '鸡胸肉', amountGram: 200, kcalPer100g: 165 }]
+    },
+    {
+      now: new Date('2026-06-12T05:00:00.000Z')
+    }
+  )
+
+  assert.strictEqual(updated.mealType, 'dinner')
+  assert.strictEqual(updated.totalCalories, 330)
+  assert.strictEqual(deleteMealRecord(storage, record.id), true)
+  assert.strictEqual(listMealsByDate(storage, dateKey, account.id).length, 0)
+}
+
 verifyMiniProgramShape()
 verifyVibrantOrangeReplica()
 verifyFirstRunAccountAndProfile()
+verifyMealRecordBackend()
 
-console.log('smoke ok: vibrant orange UI, account registration, profile plan')
+console.log('smoke ok: vibrant orange UI, account registration, meal logging')

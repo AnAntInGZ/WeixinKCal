@@ -5,8 +5,8 @@
 - 仓库根目录：`/Users/bytedance/bytedance/WeixinKCal`
 - 标准启动路径：`./harness/init.sh`；需要预览界面时，用微信开发者工具打开仓库根目录。`npm run dev` 会打印这条启动提示。
 - 标准验证路径：`./harness/init.sh`
-- 当前最高优先级未完成功能：`wx-002` 记录每日每餐饮食
-- 当前 blocker：无。已知未验证项：活力橙 UI 已按 HTML 转为小程序页面并通过 smoke test；微信开发者工具已确认首页和上传页不白屏，但尚未做真机或像素级截图比对。
+- 当前最高优先级未完成功能：`wx-005` 升级账户为跨设备可恢复账户
+- 当前 blocker：`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作；业务功能已可在微信开发者工具内端到端点击。
 
 ## 会话记录
 
@@ -111,3 +111,34 @@
   - 尚未做真机预览或像素级截图比对。
   - `project.config.json` 与 `project.private.config.json` 仍有微信开发者工具生成/修改痕迹，本轮不纳入提交。
 - 下一步最佳动作：继续 `wx-002`，实现真实每日餐食记录数据流。
+
+### Session 005
+
+- 日期：2026-06-12
+- 本轮目标：完善前端输入框和后端餐食功能，让用户能在微信开发者工具里完成建档、添加餐食、保存、首页汇总的完整点击流，并为后续云端发布做准备。
+- 已完成：
+  - 新增 `utils/meal.js`，提供餐食新增、查询、更新、删除、按日期汇总、内置食物热量估算和默认草稿餐食。
+  - 将建档页从固定值改为真实输入：性别、年龄、身高、体重、活动量、目标。
+  - 将上传页从静态展示改为真实表单：日期、餐次、食物名、克重、每 100g 热量、备注、添加/删除食物、保存。
+  - 将首页改为读取当天餐食记录，动态展示已摄入、目标、剩余、进度、三大营养素和餐食列表。
+  - 在 `app.json` 加入 `lazyCodeLoading: requiredComponents`，作为上传前更友好的小程序配置。
+  - 更新 smoke test，覆盖餐食记录后端的新增、查询、汇总、更新和删除。
+- 运行过的验证：
+  - `pwd`
+  - `git log --oneline -5`
+  - `git status --short`
+  - `./harness/init.sh`：开工基线通过。
+  - `npm test`：通过，输出 `smoke ok: vibrant orange UI, account registration, meal logging`。
+  - `./harness/init.sh`：通过，内部执行 `npm install` 和 `npm test`。
+  - 微信开发者工具：建档页渲染出三个输入框、活动 picker、目标按钮和“开启计划”按钮。
+  - 微信开发者工具点击流：建档 -> 首页 -> 底部加号 -> 上传页 -> 保存 -> 首页显示午餐 `鸡胸肉 · 糙米饭 · 西兰花`，已摄入 506 kcal，剩余 1494 kcal。
+  - 微信开发者工具：重新编译后首页仍显示已保存餐食和汇总。
+- 已记录证据：`harness/feature_list.json` 中 `wx-002`、`wx-003`、`wx-004` evidence；本日志当前条目。
+- 提交记录：本轮收尾提交使用 `Add end-to-end meal logging flow`。
+- 更新过的文件或工件：`app.json`、`app.wxss`、`pages/onboarding/*`、`pages/dashboard/*`、`pages/upload/*`、`utils/meal.js`、`utils/options.js`、`tests/smoke.js`、`harness/feature_list.json`、`harness/claude-progress.md`、`harness/quality-document.md`、`harness/session-handoff.md`
+- 已知风险或未解决问题：
+  - 真正跨设备云端账户/云数据库同步仍未实现，下一步对应 `wx-005`。
+  - 最终“上传”到微信后台未执行；这是外部提交动作，需要用户确认版本号、上传描述和最终上传。
+  - 微信开发者工具仍有 `project.config.json` 与 `project.private.config.json` 的本地配置痕迹，本轮不纳入提交。
+  - 未做真机预览或像素级截图比对。
+- 下一步最佳动作：确认云端方案，优先实现 `wx-005`：用微信云开发数据库或自建后台让账户、档案和餐食记录跨设备恢复；随后由用户确认后执行 `wx-006` 上传。

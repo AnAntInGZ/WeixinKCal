@@ -78,15 +78,21 @@
       "area": "meal-log",
       "title": "记录每日每餐饮食",
       "user_visible_behavior": "用户可以按日期记录早餐、午餐、晚餐或加餐，输入食物名称、分量和备注。",
-      "status": "not_started",
+      "status": "passing",
       "verification": [
+        "运行 ./harness/init.sh。",
         "打开首页。",
         "进入添加饮食记录。",
         "新增一条餐食。",
         "回到当日记录列表，确认该餐食显示并被持久化。"
       ],
-      "evidence": [],
-      "notes": ""
+      "evidence": [
+        "2026-06-12: 新增 utils/meal.js，支持餐食新增、查询、更新、删除、按日期汇总和本地 storage 持久化。",
+        "2026-06-12: pages/upload/index 支持日期、餐次、食物名、克重、每 100g 热量、备注输入；保存后写入餐食记录并返回首页。",
+        "2026-06-12: 微信开发者工具点击流通过：建档 -> 首页 -> 底部加号 -> 上传页 -> 存好啦 -> 首页显示午餐 `鸡胸肉 · 糙米饭 · 西兰花`，已摄入 506 kcal，剩余 1494 kcal。",
+        "2026-06-12: ./harness/init.sh 通过，smoke test 输出 `smoke ok: vibrant orange UI, account registration, meal logging`。"
+      ],
+      "notes": "当前餐食记录后端使用本地 storage；代码边界按 repository 工具函数组织，后续可替换为微信云开发数据库。"
     },
     {
       "id": "wx-003",
@@ -94,15 +100,20 @@
       "area": "calorie-estimation",
       "title": "估算餐食热量",
       "user_visible_behavior": "用户输入食物和分量后，程序能给出热量估算，并允许用户手动修正。",
-      "status": "not_started",
+      "status": "passing",
       "verification": [
+        "运行 ./harness/init.sh。",
         "新增一条包含食物和分量的餐食。",
         "确认系统生成热量估算。",
-        "手动修改热量。",
+        "手动修改每 100g 热量。",
         "确认当日总热量使用修正后的值。"
       ],
-      "evidence": [],
-      "notes": "后续需确认使用内置食物库、外部 API，还是纯手动估算。"
+      "evidence": [
+        "2026-06-12: utils/meal.js 新增内置食物库和 estimateFoodItem，支持按食物名称匹配 kcal/100g、宏量营养素并按克重估算。",
+        "2026-06-12: 上传页每个食物项可编辑 kcal/100g；smoke test 覆盖鸡胸肉 150g、糙米饭 200g、西兰花 100g 估算总热量 506 kcal。",
+        "2026-06-12: smoke test 覆盖 updateMealRecord 手动改为鸡胸肉 200g、165 kcal/100g 后总热量为 330 kcal。"
+      ],
+      "notes": "当前为内置食物库 + 手动 kcal/100g 修正；后续可接外部食物库或图片识别。"
     },
     {
       "id": "wx-004",
@@ -110,15 +121,20 @@
       "area": "daily-progress",
       "title": "判断每日热量达标情况",
       "user_visible_behavior": "用户在首页看到当天已摄入热量、目标热量、剩余热量和是否达标。",
-      "status": "not_started",
+      "status": "passing",
       "verification": [
+        "运行 ./harness/init.sh。",
         "设置一个已建档用户。",
         "添加多条当天餐食。",
         "确认首页汇总当天总热量。",
         "确认达标状态随总热量变化。"
       ],
-      "evidence": [],
-      "notes": ""
+      "evidence": [
+        "2026-06-12: dashboard onShow 读取用户档案 dailyCalories 和当天餐食记录，计算已摄入、剩余、进度条百分比、碳水/蛋白/脂肪汇总。",
+        "2026-06-12: 微信开发者工具点击流确认保存 506 kcal 午餐后，首页显示已摄入 506 / 目标 2000 kcal，剩余 1494 kcal。",
+        "2026-06-12: smoke test 覆盖 summarizeMeals([record], 1550) 得到 totalCalories=506、remainingCalories=1044、progressPercent=33。"
+      ],
+      "notes": "当前达标状态通过 reached 字段计算；首页先展示剩余热量和进度，后续可补更明确的达标/超标文案。"
     },
     {
       "id": "wx-005",
@@ -135,6 +151,24 @@
       ],
       "evidence": [],
       "notes": "需要后续确认使用微信云开发、自建后台，还是其他数据服务。"
+    },
+    {
+      "id": "wx-006",
+      "priority": 7,
+      "area": "release",
+      "title": "云端发布准备和上传",
+      "user_visible_behavior": "开发者可以用正式 AppID 和微信开发者工具把当前小程序上传到微信后台，形成可提交审核的版本。",
+      "status": "blocked",
+      "verification": [
+        "确认项目使用正式 AppID。",
+        "确认版本号和上传描述。",
+        "在微信开发者工具点击上传。",
+        "确认微信后台出现对应开发版本。"
+      ],
+      "evidence": [
+        "2026-06-12: 已用微信开发者工具完成本地编译和端到端点击流验证；未执行最终上传，因为上传会把代码提交到微信后台，需要用户确认版本号、上传描述和最终发布动作。"
+      ],
+      "notes": "官方云开发文档说明可使用云数据库、云函数等能力免自建服务器；本轮业务后端先使用本地 storage 跑通，跨设备云同步仍属于 wx-005。"
     }
   ]
 }
