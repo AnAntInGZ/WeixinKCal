@@ -1,5 +1,5 @@
 const { ensureAccount, mergeCloudAccount } = require('./utils/account')
-const { initWxCloud, syncCloudAccount } = require('./utils/cloud')
+const { syncCloudAccount } = require('./utils/cloud')
 
 App({
   globalData: {
@@ -9,10 +9,6 @@ App({
   onLaunch() {
     const account = ensureAccount(wx)
     this.globalData.account = account
-
-    initWxCloud().catch((error) => {
-      console.warn('init wx cloud failed', error)
-    })
 
     syncCloudAccount(account)
       .then((data) => {

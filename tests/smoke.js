@@ -288,10 +288,14 @@ function verifyCloudBackendWiring() {
     '/api/meals'
   ])
   assertFileContains('app.js', [
-    'initWxCloud',
     'syncCloudAccount',
     'mergeCloudAccount'
   ])
+  const appJs = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
+  assert.ok(
+    !appJs.includes('initWxCloud'),
+    'app.js should not initialize wx.cloud on launch because the public HTTPS endpoint is the primary backend path'
+  )
   assertFileContains('pages/onboarding/index.js', [
     'fetchCloudProfile',
     'saveCloudProfile',
