@@ -107,6 +107,16 @@ function writeMealRecords(storage, records) {
   storage.setStorageSync(MEAL_RECORDS_KEY, records)
 }
 
+function replaceMealsForDate(storage, accountId, dateKey, records) {
+  const normalizedRecords = Array.isArray(records) ? records : []
+  const nextRecords = readMealRecords(storage).filter((record) => (
+    record.accountId !== accountId || record.dateKey !== dateKey
+  ))
+
+  writeMealRecords(storage, normalizedRecords.concat(nextRecords))
+  return normalizedRecords
+}
+
 function normalizeMealInput(input = {}) {
   const items = Array.isArray(input.items) ? input.items.map(normalizeFoodItem) : []
   const dateKey = trimText(input.dateKey) || formatDateKey()
@@ -262,6 +272,7 @@ module.exports = {
   listMealsByDate,
   normalizeMealInput,
   readMealRecords,
+  replaceMealsForDate,
   summarizeMeals,
   updateMealRecord
 }

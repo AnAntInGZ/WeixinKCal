@@ -17,6 +17,11 @@ if [ -f package.json ]; then
 
   echo "==> 运行基础验证"
   "${VERIFY_CMD[@]}"
+
+  if [ -f server/go.mod ]; then
+    echo "==> 运行 Go 云托管验证"
+    (cd server && go test ./...)
+  fi
 else
   START_CMD=(echo "No app start command yet; harness self-check passed.")
 

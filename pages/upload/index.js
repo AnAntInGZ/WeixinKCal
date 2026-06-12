@@ -1,4 +1,5 @@
-const { ensureAccount } = require('../../utils/account')
+const { ensureAccount, mergeCloudAccount } = require('../../utils/account')
+const { saveCloudMeal } = require('../../utils/cloud')
 const {
   MEAL_TYPE_OPTIONS,
   addMealRecord,
@@ -29,7 +30,8 @@ Page({
       note: '',
       items: []
     },
-    totalCalories: 0
+    totalCalories: 0,
+    saving: false
   },
 
   onLoad() {
@@ -117,16 +119,31 @@ Page({
     this.refreshItems(items.length ? items : [estimateFoodItem({ name: '', amountGram: 100, kcalPer100g: 100 })])
   },
 
-  saveMeal() {
+  async saveMeal() {
+    if (this.data.saving) {
+      return
+    }
+
     const app = getApp()
     const account = app.globalData.account || ensureAccount(wx)
     app.globalData.account = account
+    this.setData({ saving: true })
 
     try {
-      addMealRecord(wx, account, this.data.form)
+      const record = addMealRecord(wx, account, this.data.form)
+      let cloudSaved = true
+      try {
+        const data = await saveCloudMeal(account, record)
+        if (data.account) {
+          app.globalData.account = mergeCloudAccount(wx, account, data.account)
+        }
+      } catch (cloudError) {
+        cloudSaved = false
+        console.warn('save cloud meal failed', cloudError)
+      }
       wx.showToast({
-        title: '存好啦',
-        icon: 'success'
+        title: cloudSaved ? '存好啦' : '本地已保存',
+        icon: cloudSaved ? 'success' : 'none'
       })
       wx.reLaunch({ url: '/pages/dashboard/index' })
     } catch (error) {
@@ -134,6 +151,8 @@ Page({
         title: error.message || '请检查餐食记录',
         icon: 'none'
       })
+    } finally {
+      this.setData({ saving: false })
     }
   }
 })

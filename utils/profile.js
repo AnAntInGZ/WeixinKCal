@@ -61,9 +61,26 @@ function getProfile(storage) {
   return storage.getStorageSync(PROFILE_KEY) || null
 }
 
+function saveProfile(storage, profile) {
+  storage.setStorageSync(PROFILE_KEY, profile)
+  return profile
+}
+
+function storeProfile(storage, account, profile) {
+  const savedProfile = saveProfile(storage, profile)
+  const nextAccount = markProfileCompleted(storage, account)
+
+  return {
+    account: nextAccount,
+    profile: savedProfile
+  }
+}
+
 module.exports = {
   PROFILE_KEY,
   createProfile,
   getProfile,
+  saveProfile,
+  storeProfile,
   validateProfileInput
 }

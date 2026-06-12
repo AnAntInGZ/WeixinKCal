@@ -5,9 +5,10 @@
 - 仓库根目录：`/Users/bytedance/bytedance/WeixinKCal`
 - 标准启动路径：`./harness/init.sh`；需要预览界面时，用微信开发者工具打开仓库根目录。`npm run dev` 会打印这条启动提示。
 - 标准验证路径：`./harness/init.sh`
-- 当前最高优先级未完成功能：`wx-005` 升级账户为跨设备可恢复账户
-- 当前 blocker：`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作；业务功能已可在微信开发者工具内端到端点击。
+- 当前最高优先级未完成功能：`wx-005` 升级账户为跨设备可恢复账户；云托管 Go 服务和小程序端 callContainer 接入已完成本地验证，仍需部署后做清缓存恢复验证。
+- 当前 blocker：`wx-005` 还没有在微信云托管上完成部署和云端端到端验证；`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作。
 - 移动端 UI 当前状态：微信开发者工具 iPhone 12/13 85% 下，首页和记录页不需要整页拖动；记录页主操作都在首屏；食物数字输入不截断；保存后可回到首页。
+- 云端数据当前状态：新增 `server/` Go 服务，按微信云托管模板监听 HTTP，使用 MySQL 环境变量建库建表；小程序端使用 `resourceEnv=prod-d8ghbq8xea378972b` 与 `X-WX-SERVICE=golang-24re-001` 调用云托管，未把数据库密码写入仓库。
 
 ## 会话记录
 
@@ -173,3 +174,33 @@
   - 当前模拟器里曾出现 DevTools 渲染滞后，需要编译后等待页面落稳；代码侧已改为更稳定的替换/重启跳转。
   - 微信开发者工具仍有 `project.config.json` 与 `project.private.config.json` 的本地配置痕迹，本轮不纳入提交。
 - 下一步最佳动作：继续 `wx-005`，确认云端方案并把账户、档案和餐食记录升级为跨设备可恢复。
+
+### Session 007
+
+- 日期：2026-06-12
+- 本轮目标：基于用户已创建的微信云托管 Golang 服务和绑定 MySQL，开发云端数据持久化后端，并让小程序端接入云托管调用。
+- 已完成：
+  - 参考微信云托管 Go 模板形态新增 `server/` 服务：`Dockerfile`、`go.mod`、配置加载、HTTP 路由、MySQL store、模型和单测。
+  - 后端实现账户同步、身体档案保存/读取、餐食保存、按日期餐食列表和日汇总；启动时会按环境变量连接 MySQL 并创建 `weixinkcal` 数据库与三张业务表。
+  - 小程序端新增 `utils/cloud.js`，集中封装 `wx.cloud.Cloud({ resourceEnv }).callContainer`，请求头使用 `X-WX-SERVICE=golang-24re-001`。
+  - `app.js` 启动时同步云端账户；建档页支持从云端恢复 profile、保存 profile 到云端；首页支持从云端拉取当天餐食和汇总；上传页保存餐食后尝试同步云端。
+  - 保留本地 storage 兜底：云端未部署、无网络或开发者工具不支持云托管时，建档和记录餐食仍能继续完成本地流程。
+  - `harness/init.sh` 增加 Go 云托管服务验证：检测到 `server/go.mod` 后运行 `go test ./...`。
+  - `tests/smoke.js` 增加云托管配置、前端调用入口和 Go 服务骨架防回归检查。
+- 运行过的验证：
+  - `pwd`
+  - `git log --oneline -5`
+  - `./harness/init.sh`：开工基线通过。
+  - `npm test`：通过，输出 `smoke ok: vibrant orange UI, account registration, meal logging, cloud backend wiring`。
+  - `env GOPROXY=https://goproxy.cn,direct go mod tidy`：生成 Go 依赖校验文件。
+  - `go test ./...`（在 `server/` 下）：通过，输出 `ok weixinkcal-cloudrun`。
+  - `./harness/init.sh`：收尾验证通过，内部执行 `npm install`、`npm test`、`server/go test ./...`。
+- 已记录证据：`harness/feature_list.json` 中 `wx-005` evidence；本日志当前条目；`harness/quality-document.md`；`harness/session-handoff.md`。
+- 提交记录：本轮收尾提交使用 `Add WeChat Cloud Run backend`。
+- 更新过的文件或工件：`server/*`、`utils/cloud.js`、`app.js`、`pages/onboarding/index.js`、`pages/dashboard/index.js`、`pages/upload/index.js`、`utils/account.js`、`utils/profile.js`、`utils/meal.js`、`tests/smoke.js`、`harness/init.sh`、`harness/feature_list.json`、`harness/claude-progress.md`、`harness/quality-document.md`、`harness/session-handoff.md`
+- 已知风险或未解决问题：
+  - 尚未把 `server/` 部署到微信云托管，也未在云托管控制台配置 MySQL 环境变量后做真实请求验证。
+  - `wx-005` 仍不能标记 passing，因为还没完成“清空本地缓存后按同一微信身份从云端恢复档案和餐食”的端到端证据。
+  - 本地没有直接连接云托管内网 MySQL；数据库连通性只能在云托管运行环境内验证。
+  - 微信开发者工具本地文件 `project.config.json` / `project.private.config.json` 仍有未提交改动，本轮不纳入提交。
+- 下一步最佳动作：把 `server/` 作为 Go 服务部署到微信云托管，配置 MySQL 环境变量后，用微信开发者工具跑建档 -> 记录餐食 -> 清缓存 -> 重新进入恢复数据的验证。

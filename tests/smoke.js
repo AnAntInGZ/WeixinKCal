@@ -260,9 +260,63 @@ function verifyMealRecordBackend() {
   assert.strictEqual(listMealsByDate(storage, dateKey, account.id).length, 0)
 }
 
+function verifyCloudBackendWiring() {
+  const cloud = require('../utils/cloud')
+
+  assert.strictEqual(cloud.CLOUD_RESOURCE_ENV, 'prod-d8ghbq8xea378972b')
+  assert.strictEqual(cloud.CLOUD_SERVICE_NAME, 'golang-24re-001')
+
+  assertFileContains('utils/cloud.js', [
+    'wx.cloud.Cloud',
+    'callContainer',
+    'X-WX-SERVICE',
+    '/api/account',
+    '/api/profile',
+    '/api/meals'
+  ])
+  assertFileContains('app.js', [
+    'syncCloudAccount',
+    'mergeCloudAccount'
+  ])
+  assertFileContains('pages/onboarding/index.js', [
+    'fetchCloudProfile',
+    'saveCloudProfile',
+    'storeProfile'
+  ])
+  assertFileContains('pages/dashboard/index.js', [
+    'fetchCloudDaily',
+    'replaceMealsForDate'
+  ])
+  assertFileContains('pages/upload/index.js', [
+    'saveCloudMeal',
+    '本地已保存'
+  ])
+
+  for (const relativePath of [
+    'server/go.mod',
+    'server/Dockerfile',
+    'server/main.go',
+    'server/config.go',
+    'server/store.go',
+    'server/handlers.go',
+    'server/models.go',
+    'server/main_test.go'
+  ]) {
+    assert.ok(fs.existsSync(path.join(root, relativePath)), `${relativePath} should exist`)
+  }
+
+  assertFileContains('server/README.md', [
+    'MYSQL_ADDRESS',
+    'MYSQL_USERNAME',
+    'MYSQL_PASSWORD',
+    '不要把数据库密码写进仓库'
+  ])
+}
+
 verifyMiniProgramShape()
 verifyVibrantOrangeReplica()
 verifyFirstRunAccountAndProfile()
 verifyMealRecordBackend()
+verifyCloudBackendWiring()
 
-console.log('smoke ok: vibrant orange UI, account registration, meal logging')
+console.log('smoke ok: vibrant orange UI, account registration, meal logging, cloud backend wiring')

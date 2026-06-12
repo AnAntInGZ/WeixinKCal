@@ -166,15 +166,19 @@
       "area": "account-sync",
       "title": "升级账户为跨设备可恢复账户",
       "user_visible_behavior": "用户更换设备或重新进入小程序后，仍可恢复自己的身体信息和饮食记录。",
-      "status": "not_started",
+      "status": "in_progress",
       "verification": [
         "完成微信登录或云端身份绑定。",
         "在一个模拟用户身份下写入档案和餐食记录。",
         "清空本地缓存后重新进入。",
         "确认云端数据可恢复到本地。"
       ],
-      "evidence": [],
-      "notes": "需要后续确认使用微信云开发、自建后台，还是其他数据服务。"
+      "evidence": [
+        "2026-06-12: 新增 server/ Go 云托管服务，包含账户、身体档案、餐食记录、按日汇总 API，以及 MySQL 建库建表和持久化逻辑；server/go test ./... 通过。",
+        "2026-06-12: 新增小程序端 utils/cloud.js，使用 resourceEnv=prod-d8ghbq8xea378972b 和 X-WX-SERVICE=golang-24re-001 通过 callContainer 调用云托管；启动同步账户、建档保存/恢复、首页按日拉取、餐食保存均已接入，并保留本地兜底。",
+        "2026-06-12: ./harness/init.sh 通过，内部执行 npm test 和 server/go test ./...；smoke test 覆盖云托管配置、前端调用入口和 Go 服务骨架。"
+      ],
+      "notes": "已确认方案为微信云托管 Go 服务 + 绑定 MySQL；代码和本地验证已完成，但尚未部署到云托管并用同一微信身份完成清空本地缓存后的云端恢复验证，所以不能标记 passing。"
     },
     {
       "id": "wx-006",

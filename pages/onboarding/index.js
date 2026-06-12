@@ -1,5 +1,6 @@
-const { ensureAccount } = require('../../utils/account')
-const { getProfile, createProfile } = require('../../utils/profile')
+const { ensureAccount, mergeCloudAccount } = require('../../utils/account')
+const { getProfile, createProfile, storeProfile } = require('../../utils/profile')
+const { fetchCloudProfile, saveCloudProfile } = require('../../utils/cloud')
 const {
   GENDER_OPTIONS,
   GOAL_OPTIONS,
@@ -21,12 +22,13 @@ Page({
       weightKg: '74',
       activityLevel: 'light',
       goal: 'fat_loss'
-    }
+    },
+    saving: false
   },
 
-  onLoad() {
+  async onLoad() {
     const app = getApp()
-    const account = app.globalData.account || ensureAccount(wx)
+    let account = app.globalData.account || ensureAccount(wx)
     app.globalData.account = account
 
     if (getProfile(wx)) {
@@ -35,6 +37,22 @@ Page({
     }
 
     this.setData({ account })
+
+    try {
+      const data = await fetchCloudProfile(account)
+      if (data.account) {
+        account = mergeCloudAccount(wx, account, data.account)
+        app.globalData.account = account
+        this.setData({ account })
+      }
+      if (data.profile) {
+        const result = storeProfile(wx, account, data.profile)
+        app.globalData.account = result.account
+        wx.redirectTo({ url: '/pages/dashboard/index' })
+      }
+    } catch (error) {
+      console.warn('fetch cloud profile failed', error)
+    }
   },
 
   updateForm(field, value) {
@@ -65,16 +83,40 @@ Page({
     })
   },
 
-  startPlan() {
+  async startPlan() {
+    if (this.data.saving) {
+      return
+    }
+
+    this.setData({ saving: true })
+
     try {
       const result = createProfile(wx, this.data.account, this.data.form)
+      try {
+        const data = await saveCloudProfile(result.account, result.profile)
+        if (data.account) {
+          result.account = mergeCloudAccount(wx, result.account, data.account)
+        }
+        if (data.profile) {
+          const stored = storeProfile(wx, result.account, data.profile)
+          result.account = stored.account
+        }
+      } catch (cloudError) {
+        console.warn('save cloud profile failed', cloudError)
+        wx.showToast({
+          title: '本地已保存，云端稍后同步',
+          icon: 'none'
+        })
+      }
       getApp().globalData.account = result.account
       wx.redirectTo({ url: '/pages/dashboard/index' })
     } catch (error) {
       wx.showToast({
-        title: error.message || '请检查输入信息',
+        title: error.message || '请检查输入或网络',
         icon: 'none'
       })
+    } finally {
+      this.setData({ saving: false })
     }
   }
 })

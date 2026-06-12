@@ -1,9 +1,11 @@
-const { ensureAccount } = require('../../utils/account')
-const { getProfile } = require('../../utils/profile')
+const { ensureAccount, mergeCloudAccount } = require('../../utils/account')
+const { getProfile, storeProfile } = require('../../utils/profile')
+const { fetchCloudDaily, fetchCloudProfile } = require('../../utils/cloud')
 const {
   formatDateKey,
   getDailySummary,
-  getMealTypeOption
+  getMealTypeOption,
+  replaceMealsForDate
 } = require('../../utils/meal')
 
 function mealDetail(record) {
@@ -39,25 +41,64 @@ Page({
   },
 
   onShow() {
-    const app = getApp()
-    const account = app.globalData.account || ensureAccount(wx)
-    const profile = getProfile(wx)
+    this.loadDashboard()
+  },
 
-    app.globalData.account = account
-
-    if (!profile) {
-      wx.redirectTo({ url: '/pages/onboarding/index' })
-      return
-    }
-
-    const dateKey = formatDateKey()
-    const daily = getDailySummary(wx, dateKey, profile, account)
-
+  renderDaily(dateKey, daily) {
     this.setData({
       dateKey,
       summary: daily.summary,
       meals: daily.records.map(mealViewModel)
     })
+  },
+
+  async loadDashboard() {
+    const app = getApp()
+    let account = app.globalData.account || ensureAccount(wx)
+    let profile = getProfile(wx)
+
+    app.globalData.account = account
+
+    if (!profile) {
+      try {
+        const data = await fetchCloudProfile(account)
+        if (data.account) {
+          account = mergeCloudAccount(wx, account, data.account)
+          app.globalData.account = account
+        }
+        if (data.profile) {
+          const result = storeProfile(wx, account, data.profile)
+          account = result.account
+          profile = result.profile
+          app.globalData.account = account
+        }
+      } catch (error) {
+        console.warn('fetch cloud profile failed', error)
+      }
+
+      if (!profile) {
+        wx.redirectTo({ url: '/pages/onboarding/index' })
+        return
+      }
+    }
+
+    const dateKey = formatDateKey()
+    const daily = getDailySummary(wx, dateKey, profile, account)
+    this.renderDaily(dateKey, daily)
+
+    try {
+      const data = await fetchCloudDaily(account, dateKey, profile.plan.dailyCalories)
+      if (data.account) {
+        account = mergeCloudAccount(wx, account, data.account)
+        app.globalData.account = account
+      }
+      if (data.daily) {
+        replaceMealsForDate(wx, account.id, dateKey, data.daily.records)
+        this.renderDaily(dateKey, data.daily)
+      }
+    } catch (error) {
+      console.warn('fetch cloud daily failed', error)
+    }
   },
 
   goUpload() {

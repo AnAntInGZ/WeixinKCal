@@ -23,6 +23,11 @@ function ensureAccount(storage, options = {}) {
   return account
 }
 
+function saveAccount(storage, account) {
+  storage.setStorageSync(ACCOUNT_KEY, account)
+  return account
+}
+
 function markProfileCompleted(storage, account) {
   const nextAccount = {
     ...account,
@@ -30,13 +35,28 @@ function markProfileCompleted(storage, account) {
     updatedAt: new Date().toISOString()
   }
 
-  storage.setStorageSync(ACCOUNT_KEY, nextAccount)
-  return nextAccount
+  return saveAccount(storage, nextAccount)
+}
+
+function mergeCloudAccount(storage, account = {}, cloudAccount = {}) {
+  const nextAccount = {
+    ...account,
+    id: account.id || cloudAccount.localAccountId,
+    cloudAccountKey: cloudAccount.accountKey || account.cloudAccountKey,
+    openId: cloudAccount.openId || account.openId,
+    profileCompleted: Boolean(account.profileCompleted || cloudAccount.profileCompleted),
+    createdAt: account.createdAt || cloudAccount.createdAt,
+    updatedAt: cloudAccount.updatedAt || account.updatedAt || new Date().toISOString()
+  }
+
+  return saveAccount(storage, nextAccount)
 }
 
 module.exports = {
   ACCOUNT_KEY,
   createAccount,
   ensureAccount,
+  mergeCloudAccount,
+  saveAccount,
   markProfileCompleted
 }
