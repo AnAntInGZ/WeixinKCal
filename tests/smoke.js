@@ -80,6 +80,24 @@ function verifyVibrantOrangeReplica() {
     'border-radius: 32px',
     'box-shadow: 0 12px 24px rgba(255, 92, 124, .4)'
   ])
+  const appWxss = fs.readFileSync(path.join(root, 'app.wxss'), 'utf8')
+  assert.ok(
+    !appWxss.includes('letter-spacing: -'),
+    'WXSS should not use negative letter spacing because it can cause cramped mobile text'
+  )
+  assertFileContains('app.wxss', [
+    '.upload-layout',
+    'height: calc(100vh - 44px)',
+    '.food-list',
+    'flex: 1',
+    '.upload-footer',
+    '.compact-save',
+    '.meal-list',
+    'white-space: nowrap',
+    'flex-wrap: nowrap',
+    'width: 64px',
+    'flex: 0 0 104px'
+  ])
 
   const dashboardWxml = fs.readFileSync(
     path.join(root, 'pages/dashboard/index.wxml'),
@@ -112,8 +130,12 @@ function verifyVibrantOrangeReplica() {
     '{{summary.remainingCalories}}',
     '已摄入 {{summary.totalCalories}} / 目标 {{summary.targetCalories}} kcal',
     '今日餐食 🍱',
+    'scroll-view class="meal-list"',
     'wx:for="{{meals}}"',
     '点下面的 + 记录第一餐'
+  ])
+  assertFileContains('pages/dashboard/index.js', [
+    "wx.redirectTo({ url: '/pages/upload/index' })"
   ])
 
   assertFileContains('pages/upload/index.wxml', [
@@ -122,12 +144,18 @@ function verifyVibrantOrangeReplica() {
     'mode="date"',
     'mode="selector"',
     '点我拍食物',
+    'scroll-view class="food-list"',
+    'class="fi food-card"',
     'placeholder="食物名称"',
-    'kcal / 100g · 小计 {{item.calories}}',
+    '{{item.calories}} kcal',
+    'class="upload-footer"',
     '+ 添加食物',
     '备注，例如少油、去皮、饭后水果',
     '这一餐总共 🔥',
     '存好啦 ✓'
+  ])
+  assertFileContains('pages/upload/index.js', [
+    "wx.reLaunch({ url: '/pages/dashboard/index' })"
   ])
 }
 

@@ -128,7 +128,7 @@ Page({
         title: '存好啦',
         icon: 'success'
       })
-      wx.redirectTo({ url: '/pages/dashboard/index' })
+      wx.reLaunch({ url: '/pages/dashboard/index' })
     } catch (error) {
       wx.showToast({
         title: error.message || '请检查餐食记录',

@@ -73,6 +73,30 @@
       "notes": "本轮只复刻用户提供的 HTML，不引入额外视觉设计；微信开发者工具已确认首页和上传页不白屏，尚未做真机或像素级截图比对。"
     },
     {
+      "id": "ui-002",
+      "priority": 3,
+      "area": "ui",
+      "title": "移动端固定视口和异常换行防护",
+      "user_visible_behavior": "用户在手机端使用首页和记录页时，不会因为页面过长而必须拖动整页；长餐食文本和食物输入行不会出现异常换行或数字截断。",
+      "status": "passing",
+      "verification": [
+        "运行 ./harness/init.sh。",
+        "在微信开发者工具 iPhone 12/13 模拟器中确认首页餐食列表不会把页面撑长，餐食描述单行省略。",
+        "从首页点击底部加号进入记录页，确认记录页完整铺满屏幕，不出现右侧露出或白屏卡住。",
+        "确认记录页日期、餐次、拍照区、三条食物、添加食物、备注、总热量和保存按钮都在首屏内可见。",
+        "确认三位数 kcal/100g 和克重输入不会被截断，食物行不换行。",
+        "点击保存后确认能回到首页。"
+      ],
+      "evidence": [
+        "2026-06-12: app.wxss 将页面根容器限制为 100vh，记录页改为固定高度 flex 布局；食物列表放入 scroll-view.food-list，总热量和保存按钮固定在底部 footer。",
+        "2026-06-12: dashboard 餐食列表改为 scroll-view.meal-list，餐食详情使用 nowrap + ellipsis，避免长餐食名称撑开或换行。",
+        "2026-06-12: 修复首页到记录页的 DevTools 叠层卡住问题，goUpload 改为 wx.redirectTo；保存后返回首页改为 wx.reLaunch。",
+        "2026-06-12: 微信开发者工具 iPhone 12/13 85% 验证：首页无异常换行；记录页所有主操作在首屏；165/112/34 kcal 输入值完整显示；保存后回到首页。",
+        "2026-06-12: ./harness/init.sh 通过，smoke test 输出 `smoke ok: vibrant orange UI, account registration, meal logging`，并覆盖 food-list、meal-list、nowrap、跳转方式等防回归断言。"
+      ],
+      "notes": "当前已在微信开发者工具模拟器验证，仍未做真机预览或像素级截图比对。"
+    },
+    {
       "id": "wx-002",
       "priority": 3,
       "area": "meal-log",

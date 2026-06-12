@@ -7,6 +7,7 @@
 - 标准验证路径：`./harness/init.sh`
 - 当前最高优先级未完成功能：`wx-005` 升级账户为跨设备可恢复账户
 - 当前 blocker：`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作；业务功能已可在微信开发者工具内端到端点击。
+- 移动端 UI 当前状态：微信开发者工具 iPhone 12/13 85% 下，首页和记录页不需要整页拖动；记录页主操作都在首屏；食物数字输入不截断；保存后可回到首页。
 
 ## 会话记录
 
@@ -142,3 +143,33 @@
   - 微信开发者工具仍有 `project.config.json` 与 `project.private.config.json` 的本地配置痕迹，本轮不纳入提交。
   - 未做真机预览或像素级截图比对。
 - 下一步最佳动作：确认云端方案，优先实现 `wx-005`：用微信云开发数据库或自建后台让账户、档案和餐食记录跨设备恢复；随后由用户确认后执行 `wx-006` 上传。
+
+### Session 006
+
+- 日期：2026-06-12
+- 本轮目标：确认并优化手机端 UI，避免异常换行、输入截断、整页过长拖动，以及微信开发者工具里的页面叠层/白屏卡住。
+- 已完成：
+  - 将全局页面根容器固定为 `100vh`，避免小程序页面被内容撑成长页面。
+  - 将记录页改为固定高度 flex 布局：顶部表单和拍照区压缩，餐食列表进入 `scroll-view.food-list` 内部滚动，底部总热量和保存按钮固定可见。
+  - 将首页餐食区域改为 `scroll-view.meal-list`，餐食详情单行省略，避免长餐食名异常换行。
+  - 调整记录页食物行宽度，确保三位数 `kcal/100g` 和克重输入完整显示。
+  - 修复微信开发者工具中首页点击加号后 upload 页面只露出右侧一条的问题：`goUpload` 从 `wx.navigateTo` 改为 `wx.redirectTo`。
+  - 修复保存后回首页偶发白屏/渲染滞后风险：保存成功后使用 `wx.reLaunch` 回到首页。
+  - 更新 smoke test，加入固定视口、内部滚动、nowrap、输入宽度和跳转方式的防回归检查。
+- 运行过的验证：
+  - `pwd`
+  - `git log --oneline -5`
+  - `./harness/init.sh`：开工基线通过。
+  - `npm test`：多次通过，输出 `smoke ok: vibrant orange UI, account registration, meal logging`。
+  - 微信开发者工具 iPhone 12/13 85%：首页显示正常，餐食列表不撑开页面，餐食详情单行展示。
+  - 微信开发者工具点击流：首页 -> 底部加号 -> 记录页；记录页完整铺满屏幕，日期、餐次、拍照区、三条食物、添加食物、备注、总热量、保存按钮都在首屏。
+  - 微信开发者工具：记录页 `165/112/34` kcal 输入显示完整，无异常换行；点击保存后回到首页。
+  - `./harness/init.sh`：收尾验证通过，内部执行 `npm install` 和 `npm test`。
+- 已记录证据：`harness/feature_list.json` 中 `ui-002` evidence；本日志当前条目；`harness/quality-document.md`。
+- 提交记录：本轮收尾提交使用 `Stabilize mobile UI layout`。
+- 更新过的文件或工件：`app.wxss`、`pages/dashboard/index.wxml`、`pages/dashboard/index.js`、`pages/upload/index.wxml`、`pages/upload/index.js`、`tests/smoke.js`、`harness/feature_list.json`、`harness/claude-progress.md`、`harness/quality-document.md`、`harness/session-handoff.md`
+- 已知风险或未解决问题：
+  - 尚未做真机预览或像素级截图比对。
+  - 当前模拟器里曾出现 DevTools 渲染滞后，需要编译后等待页面落稳；代码侧已改为更稳定的替换/重启跳转。
+  - 微信开发者工具仍有 `project.config.json` 与 `project.private.config.json` 的本地配置痕迹，本轮不纳入提交。
+- 下一步最佳动作：继续 `wx-005`，确认云端方案并把账户、档案和餐食记录升级为跨设备可恢复。

@@ -61,6 +61,6 @@ Page({
   },
 
   goUpload() {
-    wx.navigateTo({ url: '/pages/upload/index' })
+    wx.redirectTo({ url: '/pages/upload/index' })
   }
 })

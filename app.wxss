@@ -16,6 +16,7 @@ button::after {
 }
 
 .screen {
+  height: 100vh;
   min-height: 100vh;
   position: relative;
   overflow: hidden;
@@ -90,29 +91,30 @@ button::after {
 }
 
 .onb {
-  min-height: calc(100vh - 44px);
+  height: calc(100vh - 44px);
   background: linear-gradient(160deg, #ff8a3d 0%, #ff5c7c 100%);
-  padding: 56px 26px 26px;
+  padding: 28px 24px 18px;
   display: flex;
   flex-direction: column;
   color: #fff;
+  overflow: hidden;
 }
 
 .mascot {
-  width: 120px;
-  height: 120px;
-  border-radius: 40px;
+  width: 84px;
+  height: 84px;
+  border-radius: 28px;
   background: rgba(255, 255, 255, .22);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 64px;
+  font-size: 46px;
   margin: 0 auto 8px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
 }
 
 .onb .onb-title {
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 800;
   text-align: center;
   letter-spacing: 0;
@@ -121,10 +123,10 @@ button::after {
 .onb .p {
   text-align: center;
   opacity: .95;
-  margin-top: 8px;
-  font-size: 15px;
+  margin-top: 4px;
+  font-size: 14px;
   font-weight: 600;
-  line-height: 1.5;
+  line-height: 1.35;
 }
 
 .onb .p text {
@@ -134,21 +136,21 @@ button::after {
 .sheet {
   background: #fff;
   border-radius: 32px;
-  padding: 22px;
-  margin-top: 24px;
+  padding: 16px;
+  margin-top: 16px;
   color: #3a2a2a;
   box-shadow: 0 -6px 30px rgba(0, 0, 0, .1);
 }
 
 .field {
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .field-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: #3a2a2a;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   display: block;
 }
 
@@ -160,7 +162,7 @@ button::after {
 .pill-item {
   flex: 1;
   text-align: center;
-  padding: 13px;
+  padding: 11px;
   border-radius: 18px;
   background: #fff0e6;
   font-size: 14px;
@@ -175,24 +177,24 @@ button::after {
 
 .inp {
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .inp .box {
   flex: 1;
   background: #fff0e6;
   border-radius: 18px;
-  padding: 14px 16px;
+  padding: 10px 12px;
 }
 
 .inp .box .n {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
 }
 
 .num-input {
-  height: 32px;
-  min-height: 32px;
+  height: 28px;
+  min-height: 28px;
   color: #3a2a2a;
   padding: 0;
 }
@@ -212,7 +214,7 @@ button::after {
 .goalpill .goal-item {
   flex: 1 0 42%;
   text-align: center;
-  padding: 15px 4px;
+  padding: 11px 4px;
   border-radius: 18px;
   background: #fff0e6;
   font-size: 13px;
@@ -337,6 +339,7 @@ button::after {
 
 .meal .info {
   flex: 1;
+  min-width: 0;
 }
 
 .meal .info .t {
@@ -349,12 +352,20 @@ button::after {
   color: #a89090;
   font-weight: 600;
   margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .meal .kc {
   font-weight: 800;
   font-size: 18px;
   color: #ff5c7c;
+}
+
+.meal-list {
+  height: 154px;
+  overflow: hidden;
 }
 
 .tabbar {
@@ -422,6 +433,70 @@ button::after {
   font-size: 46px;
 }
 
+.upload-screen {
+  background: #fff6ee;
+}
+
+.upload-layout {
+  height: calc(100vh - 44px);
+  padding: 0 18px 14px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.upload-head {
+  flex-shrink: 0;
+}
+
+.upload-head .h1 {
+  font-size: 24px;
+}
+
+.upload-head .sub {
+  font-size: 13px;
+}
+
+.upload-form-row {
+  margin-top: 10px;
+}
+
+.upload-form-row .field-label {
+  margin-bottom: 4px;
+}
+
+.upload-form-row .select-box {
+  min-height: 38px;
+  border-radius: 14px;
+  padding: 10px 11px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.meal-type-field {
+  flex: 0 0 86px;
+}
+
+.upload-camera {
+  height: 58px;
+  min-height: 58px;
+  border-radius: 20px;
+  flex-direction: row;
+  margin: 10px 0;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.upload-camera .ci {
+  font-size: 24px;
+}
+
+.food-list {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .select-box {
   background: #fff0e6;
   border-radius: 18px;
@@ -453,15 +528,37 @@ button::after {
   box-shadow: 0 6px 16px rgba(255, 140, 90, .1);
 }
 
+.food-card {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.food-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.food-bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  margin-top: 8px;
+}
+
 .fi .e {
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
   background: #fff0e6;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 21px;
+  flex: 0 0 40px;
 }
 
 .fi .info {
@@ -475,9 +572,11 @@ button::after {
 
 .food-input {
   color: #3a2a2a;
-  height: 24px;
-  min-height: 24px;
+  height: 30px;
+  min-height: 30px;
   padding: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .fi .info .p {
@@ -489,12 +588,13 @@ button::after {
 .food-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 4px;
+  gap: 5px;
+  flex: 0 0 124px;
+  min-width: 0;
 }
 
 .mini-input {
-  width: 46px;
+  width: 64px;
   height: 22px;
   min-height: 22px;
   border-radius: 8px;
@@ -508,19 +608,20 @@ button::after {
 .qty {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
+  flex: 0 0 104px;
 }
 
 .qty .qbtn {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   border-radius: 11px;
   border: none;
   background: linear-gradient(135deg, #ff8a3d, #ff5c7c);
   color: #fff;
   font-size: 18px;
   font-weight: 800;
-  line-height: 30px;
+  line-height: 24px;
   padding: 0;
   margin-left: 0;
   margin-right: 0;
@@ -529,13 +630,13 @@ button::after {
 .qty .qv {
   font-size: 14px;
   font-weight: 700;
-  width: 38px;
+  width: 30px;
   text-align: center;
 }
 
 .qinput {
-  height: 30px;
-  min-height: 30px;
+  height: 26px;
+  min-height: 26px;
   border-radius: 10px;
   background: #fff0e6;
   color: #3a2a2a;
@@ -549,43 +650,57 @@ button::after {
 }
 
 .remove-btn {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 10px;
   background: #fff0e6;
   color: #c0603a;
   font-size: 18px;
   font-weight: 800;
-  line-height: 28px;
+  line-height: 26px;
   padding: 0;
   margin: 0;
+  flex: 0 0 26px;
+}
+
+.item-total {
+  flex: 1;
+  min-width: 60px;
+  color: #ff5c7c;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .add-food {
   width: 100%;
-  height: 48px;
-  border-radius: 18px;
+  height: 38px;
+  border-radius: 16px;
   background: #fff;
   color: #ff5c7c;
   font-size: 15px;
   font-weight: 800;
-  line-height: 48px;
+  line-height: 38px;
   padding: 0;
-  margin: 2px 0 12px;
+  margin: 8px 0;
   box-shadow: 0 6px 16px rgba(255, 140, 90, .1);
+  flex-shrink: 0;
 }
 
 .note-input {
   width: 100%;
-  min-height: 76px;
-  border-radius: 22px;
+  height: 46px;
+  min-height: 46px;
+  border-radius: 18px;
   background: #fff;
   color: #3a2a2a;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 14px;
-  margin-bottom: 12px;
+  padding: 11px 12px;
+  margin-bottom: 10px;
   box-shadow: 0 6px 16px rgba(255, 140, 90, .1);
+  flex-shrink: 0;
 }
 
 .empty-meal .kc {
@@ -604,6 +719,32 @@ button::after {
   box-shadow: 0 10px 24px rgba(255, 140, 90, .35);
 }
 
+.upload-footer {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.compact-total {
+  flex: 1;
+  border-radius: 20px;
+  padding: 10px 14px;
+  margin: 0;
+  min-width: 0;
+}
+
+.compact-save {
+  width: 108px;
+  height: 64px;
+  min-height: 64px;
+  border-radius: 20px;
+  padding: 0;
+  margin: 0;
+  line-height: 64px;
+  flex: 0 0 108px;
+}
+
 .total .tl {
   font-size: 14px;
   font-weight: 700;
@@ -613,4 +754,14 @@ button::after {
 .total .tv {
   font-size: 38px;
   font-weight: 800;
+}
+
+.compact-total .tl {
+  font-size: 12px;
+}
+
+.compact-total .tv {
+  font-size: 30px;
+  line-height: 1;
+  margin-top: 4px;
 }

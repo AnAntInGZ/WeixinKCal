@@ -38,22 +38,24 @@
       </view>
     </view>
     <view class="sec">今日餐食 🍱</view>
-    <view class="meal" wx:for="{{meals}}" wx:key="id">
-      <view class="ic" style="background:{{item.color}}">{{item.icon}}</view>
-      <view class="info">
-        <view class="t">{{item.title}}</view>
-        <view class="d">{{item.detail}}</view>
+    <scroll-view class="meal-list" scroll-y="true">
+      <view class="meal" wx:for="{{meals}}" wx:key="id">
+        <view class="ic" style="background:{{item.color}}">{{item.icon}}</view>
+        <view class="info">
+          <view class="t">{{item.title}}</view>
+          <view class="d">{{item.detail}}</view>
+        </view>
+        <view class="kc">{{item.calories}}</view>
       </view>
-      <view class="kc">{{item.calories}}</view>
-    </view>
-    <view class="meal empty-meal" wx:if="{{!meals.length}}">
-      <view class="ic" style="background:#fff0e6">＋</view>
-      <view class="info">
-        <view class="t">还没有记录</view>
-        <view class="d">点下面的 + 记录第一餐</view>
+      <view class="meal empty-meal" wx:if="{{!meals.length}}">
+        <view class="ic" style="background:#fff0e6">＋</view>
+        <view class="info">
+          <view class="t">还没有记录</view>
+          <view class="d">点下面的 + 记录第一餐</view>
+        </view>
+        <view class="kc">0</view>
       </view>
-      <view class="kc">0</view>
-    </view>
+    </scroll-view>
     <view style="height:100px"></view>
   </view>
   <view class="tabbar">
