@@ -8,7 +8,7 @@
 - 当前最高优先级未完成功能：`wx-005` 升级账户为跨设备可恢复账户；云托管 Go 服务和小程序端 callContainer 接入已完成本地验证，仍需部署后做清缓存恢复验证。
 - 当前 blocker：`wx-005` 还没有在微信云托管上完成部署和云端端到端验证；本地尝试进入 `cloud.weixin.qq.com/cloudrun/console` 时 Computer Use 被该 URL 的安全策略阻止，部署需要用户手动操作控制台或提供可用的非浏览器部署方式；`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作。
 - 移动端 UI 当前状态：微信开发者工具 iPhone 12/13 85% 下，首页和记录页不需要整页拖动；记录页主操作都在首屏；食物数字输入不截断；保存后可回到首页。
-- 云端数据当前状态：新增 `server/` Go 服务，按微信云托管模板监听 HTTP，使用 MySQL 环境变量建库建表；小程序端使用 `resourceEnv=prod-d8ghbq8xea378972b` 与 `X-WX-SERVICE=golang-24re-001` 调用云托管，未把数据库密码写入仓库。
+- 云端数据当前状态：新增 `server/` Go 服务，按微信云托管模板监听 HTTP，使用 MySQL 环境变量建库建表；MySQL DSN 已使用 `mysql.NewConfig()` 保留 driver 默认认证兼容配置，允许 `mysql_native_password`；小程序端使用 `resourceEnv=prod-d8ghbq8xea378972b` 与 `X-WX-SERVICE=golang-24re-001` 调用云托管，未把数据库密码写入仓库。
 
 ## 会话记录
 
@@ -227,3 +227,27 @@
   - 当前 Git 仓库没有配置 `origin`，且本机没有 `gh`，无法直接推送到 GitHub；需要用户提供 GitHub 仓库 URL，或确认安装 `gh` 并创建/绑定仓库。
   - `project.config.json` 是微信开发者工具本地 AppID/编译配置改动，本轮仍不纳入提交；`project.private.config.json` 已加入忽略规则。
 - 下一步最佳动作：拿到 GitHub 远端 URL 后配置 `origin` 并 push；随后用户在云托管控制台上传 `server/` 目录，配置 MySQL 环境变量并发布。
+
+### Session 009
+
+- 日期：2026-06-12
+- 本轮目标：修复微信云托管 Go 后端启动时报出的 MySQL `mysql_native_password` 认证失败。
+- 已完成：
+  - 根据云端日志定位到 Go MySQL driver 握手阶段失败：`this user requires mysql native password authentication`。
+  - 确认 `server/store.go` 手写 `mysql.Config{...}` 绕过了 `go-sql-driver/mysql` 的 `NewConfig()` 默认值，使 `AllowNativePasswords` 保持 false。
+  - 将 `mysqlDSN` 改为 `mysql.NewConfig()` 后填充业务字段，保留 driver 默认认证兼容配置。
+  - 新增 `TestMySQLDSNAllowsNativePasswords`，解析生成的 DSN 并断言 `AllowNativePasswords` 为 true。
+- 运行过的验证：
+  - `pwd`
+  - `git log --oneline -5`
+  - `./harness/init.sh`：开工基线通过。
+  - `go test ./...`（在 `server/` 下）：通过。
+  - `./harness/init.sh`：修复后通过，内部执行 npm smoke 和 Go 单测。
+- 已记录证据：`harness/feature_list.json` 中 `wx-005` 新增 MySQL native password 修复证据；本日志当前条目。
+- 提交记录：本轮收尾提交使用 `Fix MySQL native password auth`。
+- 更新过的文件或工件：`server/store.go`、`server/main_test.go`、`harness/feature_list.json`、`harness/claude-progress.md`、`harness/session-handoff.md`
+- 已知风险或未解决问题：
+  - 还需要用户在微信云托管重新部署最新 GitHub 代码后验证服务启动。
+  - 仍未完成清空本地缓存后的云端恢复端到端验证。
+  - `project.config.json` 仍有微信开发者工具本地改动，本轮不纳入提交。
+- 下一步最佳动作：推送修复提交到 GitHub，用户重新部署 Go 服务；若启动成功，再用微信开发者工具验证建档、保存餐食和云端恢复。

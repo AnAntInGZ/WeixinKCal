@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/go-sql-driver/mysql"
+)
 
 func TestAccountKeyPrefersOpenID(t *testing.T) {
 	key, err := accountKey("  open123  ", "local123")
@@ -34,6 +38,26 @@ func TestSafeDatabaseIdentifier(t *testing.T) {
 	}
 	if isSafeIdentifier("weixinkcal-prod") {
 		t.Fatal("expected dash to be rejected")
+	}
+}
+
+func TestMySQLDSNAllowsNativePasswords(t *testing.T) {
+	dsn := mysqlDSN(Config{
+		MySQLAddress:  "127.0.0.1:3306",
+		MySQLUsername: "root",
+		MySQLPassword: "secret",
+		MySQLDatabase: "weixinkcal",
+	}, "weixinkcal")
+
+	cfg, err := mysql.ParseDSN(dsn)
+	if err != nil {
+		t.Fatalf("ParseDSN returned error: %v", err)
+	}
+	if !cfg.AllowNativePasswords {
+		t.Fatal("expected mysql_native_password authentication to be allowed")
+	}
+	if cfg.DBName != "weixinkcal" {
+		t.Fatalf("unexpected database name: %s", cfg.DBName)
 	}
 }
 

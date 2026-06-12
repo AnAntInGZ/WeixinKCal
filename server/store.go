@@ -41,16 +41,15 @@ func OpenStore(cfg Config) (*Store, error) {
 }
 
 func mysqlDSN(cfg Config, dbName string) string {
-	mysqlCfg := mysql.Config{
-		User:      cfg.MySQLUsername,
-		Passwd:    cfg.MySQLPassword,
-		Net:       "tcp",
-		Addr:      cfg.MySQLAddress,
-		DBName:    dbName,
-		ParseTime: true,
-		Params: map[string]string{
-			"charset": "utf8mb4,utf8",
-		},
+	mysqlCfg := mysql.NewConfig()
+	mysqlCfg.User = cfg.MySQLUsername
+	mysqlCfg.Passwd = cfg.MySQLPassword
+	mysqlCfg.Net = "tcp"
+	mysqlCfg.Addr = cfg.MySQLAddress
+	mysqlCfg.DBName = dbName
+	mysqlCfg.ParseTime = true
+	mysqlCfg.Params = map[string]string{
+		"charset": "utf8mb4,utf8",
 	}
 	return mysqlCfg.FormatDSN()
 }
