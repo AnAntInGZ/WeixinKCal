@@ -1,6 +1,6 @@
 # WeixinKCal 云托管后端
 
-这是给微信云托管 Go 服务使用的后端。服务监听 `:80`，通过 `wx.cloud.Cloud({ resourceEnv }).callContainer` 调用。
+这是给微信云托管 Go 服务使用的后端。服务监听 `:80`，小程序端优先通过公网 HTTPS 调用。首次云端请求会携带 `wx.login` 生成的临时 code；服务端配置小程序密钥后用 `jscode2session` 换取 openid 作为云端账户身份，并返回短期签名 `sessionToken` 供后续请求使用，避免重复消耗一次性 code。
 
 ## 云托管配置
 
@@ -19,8 +19,10 @@
 - `MYSQL_PASSWORD`: MySQL 密码
 - `MYSQL_DATABASE`: 数据库名，可选，默认 `weixinkcal`
 - `PORT`: 监听端口，可选，默认 `80`
+- `WECHAT_APPID`: 小程序 AppID，可选，默认 `wx2ba486d512c00ac6`
+- `WECHAT_APP_SECRET` 或 `WECHAT_SECRET`: 小程序 AppSecret。配置后，后端会用 `wx.login` code 换取 openid，并签发 `sessionToken`，实现清缓存或换设备后的账户恢复。
 
-不要把数据库密码写进仓库。
+不要把数据库密码或小程序 AppSecret 写进仓库。
 
 ## API
 

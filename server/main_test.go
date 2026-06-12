@@ -2,11 +2,20 @@ package main
 
 import (
 	"encoding/json"
+	"io"
+	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
 )
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (fn roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) {
+	return fn(r)
+}
 
 func TestAccountKeyPrefersOpenID(t *testing.T) {
 	key, err := accountKey("  open123  ", "local123")
@@ -31,6 +40,60 @@ func TestAccountKeyFallsBackToLocalID(t *testing.T) {
 func TestAccountKeyRejectsMissingIdentity(t *testing.T) {
 	if _, err := accountKey("", ""); err == nil {
 		t.Fatal("expected missing identity error")
+	}
+}
+
+func TestOpenIDFromLoginCode(t *testing.T) {
+	var requestedPath string
+	api := NewAPIServer(nil, Config{
+		WeChatAppID:     "wx-test",
+		WeChatAppSecret: "secret",
+		WeChatAPIBase:   "https://wechat.example",
+	})
+	api.httpClient = &http.Client{Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+		requestedPath = r.URL.String()
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Header:     make(http.Header),
+			Body:       io.NopCloser(strings.NewReader(`{"openid":"openid_from_code"}`)),
+		}, nil
+	})}
+
+	openID, err := api.openIDFromLoginCode("login-code")
+	if err != nil {
+		t.Fatalf("openIDFromLoginCode returned error: %v", err)
+	}
+	if openID != "openid_from_code" {
+		t.Fatalf("unexpected openid: %s", openID)
+	}
+	if !strings.Contains(requestedPath, "appid=wx-test") || !strings.Contains(requestedPath, "js_code=login-code") {
+		t.Fatalf("unexpected code2session request: %s", requestedPath)
+	}
+}
+
+func TestSessionTokenRoundTrip(t *testing.T) {
+	api := NewAPIServer(nil, Config{WeChatAppSecret: "secret"})
+	token, err := api.sessionTokenForOpenID("openid_from_code", time.Now())
+	if err != nil {
+		t.Fatalf("sessionTokenForOpenID returned error: %v", err)
+	}
+	openID, err := api.openIDFromSessionToken(token)
+	if err != nil {
+		t.Fatalf("openIDFromSessionToken returned error: %v", err)
+	}
+	if openID != "openid_from_code" {
+		t.Fatalf("unexpected openid: %s", openID)
+	}
+}
+
+func TestSessionTokenRejectsTampering(t *testing.T) {
+	api := NewAPIServer(nil, Config{WeChatAppSecret: "secret"})
+	token, err := api.sessionTokenForOpenID("openid_from_code", time.Now())
+	if err != nil {
+		t.Fatalf("sessionTokenForOpenID returned error: %v", err)
+	}
+	if _, err := api.openIDFromSessionToken(token + "x"); err == nil {
+		t.Fatal("expected tampered session token to be rejected")
 	}
 }
 

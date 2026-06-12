@@ -19,7 +19,7 @@ func main() {
 	defer store.Close()
 
 	mux := http.NewServeMux()
-	NewAPIServer(store).Register(mux)
+	NewAPIServer(store, cfg).Register(mux)
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
 	log.Printf("weixinkcal cloudrun listening on %s", addr)

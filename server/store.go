@@ -133,7 +133,57 @@ func (s *Store) UpsertAccount(accountKey, openID string, payload AccountPayload)
 		return Account{}, err
 	}
 
+	if openID != "" && localID != "" {
+		if err := s.MigrateLocalAccount(accountKey, "local:"+localID); err != nil {
+			return Account{}, err
+		}
+	}
+
 	return s.GetAccount(accountKey)
+}
+
+func (s *Store) MigrateLocalAccount(targetAccountKey, localAccountKey string) error {
+	if targetAccountKey == "" || localAccountKey == "" || targetAccountKey == localAccountKey {
+		return nil
+	}
+
+	if _, err := s.db.Exec(
+		`INSERT IGNORE INTO profiles
+		   (account_key, gender, age, height_cm, weight_kg, activity_level, goal, plan_json, created_at, updated_at)
+		 SELECT ?, gender, age, height_cm, weight_kg, activity_level, goal, plan_json, created_at, UTC_TIMESTAMP()
+		   FROM profiles
+		  WHERE account_key = ?`,
+		targetAccountKey,
+		localAccountKey,
+	); err != nil {
+		return err
+	}
+
+	if _, err := s.db.Exec(
+		`UPDATE meal_records
+		    SET account_key = ?, updated_at = UTC_TIMESTAMP()
+		  WHERE account_key = ?`,
+		targetAccountKey,
+		localAccountKey,
+	); err != nil {
+		return err
+	}
+
+	if _, err := s.db.Exec(
+		`UPDATE accounts
+		    SET profile_completed = profile_completed OR EXISTS (
+		          SELECT 1 FROM profiles WHERE account_key = ?
+		        ),
+		        updated_at = UTC_TIMESTAMP()
+		  WHERE account_key = ?`,
+		targetAccountKey,
+		targetAccountKey,
+	); err != nil {
+		return err
+	}
+
+	_, err := s.db.Exec(`DELETE FROM accounts WHERE account_key = ?`, localAccountKey)
+	return err
 }
 
 func (s *Store) GetAccount(accountKey string) (Account, error) {

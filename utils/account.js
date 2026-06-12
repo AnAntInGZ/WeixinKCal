@@ -44,6 +44,7 @@ function mergeCloudAccount(storage, account = {}, cloudAccount = {}) {
     id: account.id || cloudAccount.localAccountId,
     cloudAccountKey: cloudAccount.accountKey || account.cloudAccountKey,
     openId: cloudAccount.openId || account.openId,
+    sessionToken: cloudAccount.sessionToken || account.sessionToken,
     profileCompleted: Boolean(account.profileCompleted || cloudAccount.profileCompleted),
     createdAt: account.createdAt || cloudAccount.createdAt,
     updatedAt: cloudAccount.updatedAt || account.updatedAt || new Date().toISOString()

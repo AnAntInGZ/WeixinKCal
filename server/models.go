@@ -7,11 +7,14 @@ type AccountPayload struct {
 	CreatedAt        string `json:"createdAt"`
 	UpdatedAt        string `json:"updatedAt"`
 	ProfileCompleted bool   `json:"profileCompleted"`
+	LoginCode        string `json:"loginCode,omitempty"`
+	SessionToken     string `json:"sessionToken,omitempty"`
 }
 
 type Account struct {
 	AccountKey       string `json:"accountKey"`
 	OpenID           string `json:"openId,omitempty"`
+	SessionToken     string `json:"sessionToken,omitempty"`
 	LocalAccountID   string `json:"localAccountId,omitempty"`
 	ProfileCompleted bool   `json:"profileCompleted"`
 	CreatedAt        string `json:"createdAt"`

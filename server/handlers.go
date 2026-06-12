@@ -1,17 +1,26 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type APIServer struct {
-	store *Store
+	store      *Store
+	cfg        Config
+	httpClient *http.Client
 }
 
 type apiResponse struct {
@@ -40,10 +49,23 @@ type mealListRequest struct {
 	TargetCalories int            `json:"targetCalories"`
 }
 
-var dateKeyPattern = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
+type weChatCodeSessionResponse struct {
+	OpenID  string `json:"openid"`
+	ErrCode int    `json:"errcode"`
+	ErrMsg  string `json:"errmsg"`
+}
 
-func NewAPIServer(store *Store) *APIServer {
-	return &APIServer{store: store}
+var dateKeyPattern = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
+var sessionTokenTTL = 7 * 24 * time.Hour
+
+func NewAPIServer(store *Store, cfg Config) *APIServer {
+	return &APIServer{
+		store: store,
+		cfg:   cfg,
+		httpClient: &http.Client{
+			Timeout: 5 * time.Second,
+		},
+	}
 }
 
 func (s *APIServer) Register(mux *http.ServeMux) {
@@ -212,11 +234,129 @@ func (s *APIServer) listMeals(w http.ResponseWriter, r *http.Request) {
 
 func (s *APIServer) ensureAccount(r *http.Request, payload AccountPayload) (Account, error) {
 	openID := firstHeader(r, "X-WX-OPENID", "X-WX-FROM-OPENID", "X-WX-USER-OPENID")
+	if openID == "" {
+		tokenOpenID, err := s.openIDFromSessionToken(payload.SessionToken)
+		if err != nil && strings.TrimSpace(payload.LoginCode) == "" {
+			return Account{}, err
+		}
+		openID = tokenOpenID
+	}
+	if openID == "" {
+		resolvedOpenID, err := s.openIDFromLoginCode(payload.LoginCode)
+		if err != nil {
+			return Account{}, err
+		}
+		openID = resolvedOpenID
+	}
 	accountKey, err := accountKey(openID, payload.ID)
 	if err != nil {
 		return Account{}, err
 	}
-	return s.store.UpsertAccount(accountKey, openID, payload)
+	account, err := s.store.UpsertAccount(accountKey, openID, payload)
+	if err != nil {
+		return Account{}, err
+	}
+	if openID != "" {
+		sessionToken, err := s.sessionTokenForOpenID(openID, time.Now())
+		if err != nil {
+			return Account{}, err
+		}
+		account.SessionToken = sessionToken
+	}
+	return account, nil
+}
+
+func (s *APIServer) openIDFromLoginCode(loginCode string) (string, error) {
+	loginCode = strings.TrimSpace(loginCode)
+	if loginCode == "" || strings.TrimSpace(s.cfg.WeChatAppSecret) == "" {
+		return "", nil
+	}
+
+	endpoint, err := url.Parse(strings.TrimRight(s.cfg.WeChatAPIBase, "/") + "/sns/jscode2session")
+	if err != nil {
+		return "", err
+	}
+	query := endpoint.Query()
+	query.Set("appid", s.cfg.WeChatAppID)
+	query.Set("secret", s.cfg.WeChatAppSecret)
+	query.Set("js_code", loginCode)
+	query.Set("grant_type", "authorization_code")
+	endpoint.RawQuery = query.Encode()
+
+	response, err := s.httpClient.Get(endpoint.String())
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+	if response.StatusCode >= http.StatusBadRequest {
+		return "", fmt.Errorf("wechat code2session http status %d", response.StatusCode)
+	}
+
+	var result weChatCodeSessionResponse
+	if err := json.NewDecoder(response.Body).Decode(&result); err != nil {
+		return "", err
+	}
+	if result.ErrCode != 0 {
+		return "", fmt.Errorf("wechat code2session failed: %s", result.ErrMsg)
+	}
+	if strings.TrimSpace(result.OpenID) == "" {
+		return "", errors.New("wechat code2session returned empty openid")
+	}
+	return strings.TrimSpace(result.OpenID), nil
+}
+
+func (s *APIServer) sessionTokenForOpenID(openID string, now time.Time) (string, error) {
+	openID = strings.TrimSpace(openID)
+	secret := strings.TrimSpace(s.cfg.WeChatAppSecret)
+	if openID == "" || secret == "" {
+		return "", nil
+	}
+
+	encodedOpenID := base64.RawURLEncoding.EncodeToString([]byte(openID))
+	payload := fmt.Sprintf("%s.%d", encodedOpenID, now.Add(sessionTokenTTL).Unix())
+	return payload + "." + s.signSessionPayload(payload), nil
+}
+
+func (s *APIServer) openIDFromSessionToken(sessionToken string) (string, error) {
+	sessionToken = strings.TrimSpace(sessionToken)
+	secret := strings.TrimSpace(s.cfg.WeChatAppSecret)
+	if sessionToken == "" || secret == "" {
+		return "", nil
+	}
+
+	parts := strings.Split(sessionToken, ".")
+	if len(parts) != 3 {
+		return "", errors.New("invalid session token")
+	}
+	payload := parts[0] + "." + parts[1]
+	expectedSignature := s.signSessionPayload(payload)
+	if !hmac.Equal([]byte(parts[2]), []byte(expectedSignature)) {
+		return "", errors.New("invalid session token signature")
+	}
+
+	expiresAt, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return "", errors.New("invalid session token expiry")
+	}
+	if time.Now().Unix() > expiresAt {
+		return "", errors.New("session token expired")
+	}
+
+	openIDBytes, err := base64.RawURLEncoding.DecodeString(parts[0])
+	if err != nil {
+		return "", errors.New("invalid session token subject")
+	}
+	openID := strings.TrimSpace(string(openIDBytes))
+	if openID == "" {
+		return "", errors.New("invalid session token subject")
+	}
+	return openID, nil
+}
+
+func (s *APIServer) signSessionPayload(payload string) string {
+	mac := hmac.New(sha256.New, []byte(strings.TrimSpace(s.cfg.WeChatAppSecret)))
+	mac.Write([]byte(payload))
+	return base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
 }
 
 func accountKey(openID, localAccountID string) (string, error) {

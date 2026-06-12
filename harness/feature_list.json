@@ -182,9 +182,14 @@
         "2026-06-12: 接入云托管公网服务域名 `https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com`，小程序端优先使用 wx.request 调用公网域名，保留 callContainer 作为无 wx.request 能力时的备用入口；公网 `/healthz` 返回 status ok，公网 `/api/account` 可写入并返回账户。",
         "2026-06-12: 本地调试发现云端当前版本对空餐食列表返回 `records:null`；前端 dashboard 已对 `daily.records` 和 `record.items` 做数组容错，后端本地代码已新增 normalizeMealRecords 确保最新版本部署后空列表返回 `records:[]`，并新增 Go 单测防回归；./harness/init.sh 通过。",
         "2026-06-12: 用户重新部署后，公网 `/api/meals/list` 已返回 `records:[]`；微信开发者工具 iPhone 12/13 85% 点击流通过：首页 -> 记录页 -> 保存默认午餐 -> 首页显示已摄入 506 kcal，Network 面板 `/api/meals/list` XHR 200，Console 清空后无新 error。",
-        "2026-06-12: 移除 `app.js` 启动时的 `wx.cloud.init()` 调用；当前主路径是公网 HTTPS `wx.request`，保留启动云开发初始化会在开发者工具里产生基础库 `Error: timeout` 噪声；smoke test 已防止重新引入启动初始化。"
+        "2026-06-12: 移除 `app.js` 启动时的 `wx.cloud.init()` 调用；当前主路径是公网 HTTPS `wx.request`，保留启动云开发初始化会在开发者工具里产生基础库 `Error: timeout` 噪声；smoke test 已防止重新引入启动初始化。",
+        "2026-06-12: 清除微信开发者工具数据缓存后复测发现：只依赖本地 account id 无法作为跨设备恢复身份；尝试优先 `callContainer` 时开发者工具基础库 3.16.1 仍会 `Error: timeout`。",
+        "2026-06-12: 前端云端请求已附带 `wx.login` 的 `loginCode`；后端新增 `WECHAT_APP_SECRET` / `WECHAT_SECRET` 配置，配置后通过 `jscode2session` 换 openid 并作为账户主键；./harness/init.sh 通过，Go 单测覆盖 code2session 解析。",
+        "2026-06-12: 后端新增 `Store.MigrateLocalAccount`，同一 local id 首次绑定 openid 时会把旧 `local:*` 账号下的 profile 和 meal records 迁到 `openid:*`；smoke test 覆盖迁移入口和餐食归并 SQL。",
+        "2026-06-12: 新增短期签名 `sessionToken`，后端首次 code2session 后返回 token，前端保存并在后续请求中复用；移除 `app.js` 启动云端同步，`callContainer` 仅在无 `wx.request` 能力时兜底；./harness/init.sh 通过，Go 单测覆盖 token 签名和篡改拒绝。",
+        "2026-06-12: 微信开发者工具本轮复测：首页稳定渲染、不白屏；当前基础库 3.16.1 仍会在 `wx.login`/身份请求附近打出 `Error: timeout`，需等后端部署并配置 AppSecret 后再做清缓存恢复 E2E。"
       ],
-      "notes": "已确认方案为微信云托管 Go 服务 + 绑定 MySQL + 公网服务域名；公网服务和保存餐食联调已通过，但还没有用同一微信身份完成清空本地缓存后的云端恢复验证，所以不能标记 passing。发布前需要把 golang-24re-269724-9-1309913757.sh.run.tcloudbase.com 加入小程序 request 合法域名。"
+      "notes": "已确认方案为微信云托管 Go 服务 + 绑定 MySQL + 公网服务域名 + wx.login/code2session/sessionToken 身份绑定 + local 到 openid 数据迁移；当前代码已实现，但云端需要重新部署并配置 WECHAT_APP_SECRET 或 WECHAT_SECRET 后才能完成清空本地缓存后的恢复验证，所以不能标记 passing。发布前需要把 golang-24re-269724-9-1309913757.sh.run.tcloudbase.com 加入小程序 request 合法域名。"
     },
     {
       "id": "wx-006",

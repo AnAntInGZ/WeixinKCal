@@ -7,20 +7,26 @@ import (
 )
 
 type Config struct {
-	MySQLAddress  string
-	MySQLUsername string
-	MySQLPassword string
-	MySQLDatabase string
-	Port          string
+	MySQLAddress    string
+	MySQLUsername   string
+	MySQLPassword   string
+	MySQLDatabase   string
+	Port            string
+	WeChatAppID     string
+	WeChatAppSecret string
+	WeChatAPIBase   string
 }
 
 func LoadConfig() (Config, error) {
 	cfg := Config{
-		MySQLAddress:  os.Getenv("MYSQL_ADDRESS"),
-		MySQLUsername: os.Getenv("MYSQL_USERNAME"),
-		MySQLPassword: os.Getenv("MYSQL_PASSWORD"),
-		MySQLDatabase: getenv("MYSQL_DATABASE", getenv("MYSQL_DB", "weixinkcal")),
-		Port:          getenv("PORT", "80"),
+		MySQLAddress:    os.Getenv("MYSQL_ADDRESS"),
+		MySQLUsername:   os.Getenv("MYSQL_USERNAME"),
+		MySQLPassword:   os.Getenv("MYSQL_PASSWORD"),
+		MySQLDatabase:   getenv("MYSQL_DATABASE", getenv("MYSQL_DB", "weixinkcal")),
+		Port:            getenv("PORT", "80"),
+		WeChatAppID:     getenv("WECHAT_APPID", "wx2ba486d512c00ac6"),
+		WeChatAppSecret: getenv("WECHAT_APP_SECRET", getenv("WECHAT_SECRET", "")),
+		WeChatAPIBase:   getenv("WECHAT_API_BASE", "https://api.weixin.qq.com"),
 	}
 
 	if cfg.MySQLAddress == "" {

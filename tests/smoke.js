@@ -267,6 +267,7 @@ function verifyCloudBackendWiring() {
     cloud.CLOUD_BASE_URL,
     'https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com'
   )
+  assert.strictEqual(cloud.CLOUD_CONTAINER_TIMEOUT_MS, 5000)
   assert.strictEqual(cloud.CLOUD_REQUEST_TIMEOUT_MS, 5000)
   assert.strictEqual(cloud.CLOUD_RESOURCE_APPID, 'wx2ba486d512c00ac6')
   assert.strictEqual(cloud.CLOUD_RESOURCE_ENV, 'prod-d8ghbq8xea378972b')
@@ -274,8 +275,15 @@ function verifyCloudBackendWiring() {
 
   assertFileContains('utils/cloud.js', [
     'CLOUD_BASE_URL',
+    'CLOUD_CONTAINER_TIMEOUT_MS',
+    'CLOUD_LOGIN_TIMEOUT_MS',
     'CLOUD_REQUEST_TIMEOUT_MS',
+    'getLoginCode',
+    'loginCode',
+    'sessionToken',
+    'requestCloudContainer',
     'wx.request',
+    'wx.login',
     'resourceAppid: CLOUD_RESOURCE_APPID',
     'wx.cloud.init',
     'wx.cloud.Cloud',
@@ -288,14 +296,54 @@ function verifyCloudBackendWiring() {
     '/api/meals'
   ])
   assertFileContains('app.js', [
-    'syncCloudAccount',
-    'mergeCloudAccount'
+    'ensureAccount'
+  ])
+  assertFileContains('utils/account.js', [
+    'sessionToken: cloudAccount.sessionToken || account.sessionToken'
   ])
   const appJs = fs.readFileSync(path.join(root, 'app.js'), 'utf8')
   assert.ok(
     !appJs.includes('initWxCloud'),
-    'app.js should not initialize wx.cloud on launch because the public HTTPS endpoint is the primary backend path'
+    'app.js should not initialize wx.cloud on launch because cloud calls are lazily initialized by utils/cloud.js'
   )
+  assert.ok(
+    !appJs.includes('syncCloudAccount'),
+    'app.js should not call cloud APIs on launch; pages sync cloud data when they need it'
+  )
+
+  const cloudJs = fs.readFileSync(path.join(root, 'utils/cloud.js'), 'utf8')
+  const callCloudBody = cloudJs.slice(cloudJs.indexOf('async function callCloud'))
+  assert.ok(
+    callCloudBody.indexOf('requestCloudHTTP(path, requestData, method)') < callCloudBody.indexOf('requestCloudContainer(path, requestData, method)'),
+    'callCloud should prefer public HTTPS with wx.login identity before falling back to callContainer'
+  )
+  assert.ok(
+    callCloudBody.indexOf('requestCloudHTTP(path, requestData, method)') < callCloudBody.indexOf('if (canUseCloud())'),
+    'callCloud should only use callContainer when wx.request is unavailable'
+  )
+  assertFileContains('server/config.go', [
+    'WECHAT_APPID',
+    'WECHAT_APP_SECRET',
+    'WECHAT_SECRET'
+  ])
+  assertFileContains('server/handlers.go', [
+    'jscode2session',
+    'js_code',
+    'openIDFromLoginCode',
+    'sessionTokenForOpenID',
+    'openIDFromSessionToken',
+    'hmac'
+  ])
+  assertFileContains('server/models.go', [
+    'LoginCode',
+    'SessionToken'
+  ])
+  assertFileContains('server/store.go', [
+    'MigrateLocalAccount',
+    '"local:"+localID',
+    'INSERT IGNORE INTO profiles',
+    'UPDATE meal_records'
+  ])
   assertFileContains('pages/onboarding/index.js', [
     'fetchCloudProfile',
     'saveCloudProfile',
@@ -328,7 +376,8 @@ function verifyCloudBackendWiring() {
     'MYSQL_ADDRESS',
     'MYSQL_USERNAME',
     'MYSQL_PASSWORD',
-    '不要把数据库密码写进仓库'
+    'WECHAT_APP_SECRET',
+    '不要把数据库密码或小程序 AppSecret 写进仓库'
   ])
 }
 

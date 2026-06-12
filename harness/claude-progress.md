@@ -5,10 +5,10 @@
 - 仓库根目录：`/Users/bytedance/bytedance/WeixinKCal`
 - 标准启动路径：`./harness/init.sh`；需要预览界面时，用微信开发者工具打开仓库根目录。`npm run dev` 会打印这条启动提示。
 - 标准验证路径：`./harness/init.sh`
-- 当前最高优先级未完成功能：`wx-005` 升级账户为跨设备可恢复账户；云托管公网域名已接入小程序端，最新后端已部署并通过保存餐食联调，仍需做清缓存恢复验证。
-- 当前 blocker：`wx-005` 尚未完成“清缓存后从云端恢复档案和餐食”的端到端验证；`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作。
+- 当前最高优先级未完成功能：`wx-005` 升级账户为跨设备可恢复账户；清缓存测试暴露本地 id 不能作为恢复身份，代码已补 `wx.login -> jscode2session -> openid -> sessionToken` 身份链路，并支持把旧 `local:*` 云端数据迁到 `openid:*`，仍需部署后端并配置小程序 AppSecret 后复测。
+- 当前 blocker：`wx-005` 尚未完成“清缓存后从云端恢复档案和餐食”的端到端验证；云端需要部署包含 `loginCode` 的后端版本，并配置 `WECHAT_APP_SECRET` 或 `WECHAT_SECRET`；`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作。
 - 移动端 UI 当前状态：微信开发者工具 iPhone 12/13 85% 下，首页和记录页不需要整页拖动；记录页主操作都在首屏；食物数字输入不截断；保存后可回到首页。
-- 云端数据当前状态：新增 `server/` Go 服务，按微信云托管模板监听 HTTP，使用 MySQL 环境变量建库建表；MySQL DSN 已使用 `mysql.NewConfig()` 保留 driver 默认认证兼容配置，允许 `mysql_native_password`；小程序端优先用 `wx.request` 调用 `https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com`，`callContainer` 只作无 `wx.request` 能力时的备用入口；公网 `/healthz` 正常、空餐食列表返回 `records:[]`，微信开发者工具保存默认午餐后首页展示 506 kcal；未把数据库密码写入仓库。
+- 云端数据当前状态：新增 `server/` Go 服务，按微信云托管模板监听 HTTP，使用 MySQL 环境变量建库建表；MySQL DSN 已使用 `mysql.NewConfig()` 保留 driver 默认认证兼容配置，允许 `mysql_native_password`；小程序端优先用 `wx.request` 调用 `https://golang-24re-269724-9-1309913757.sh.run.tcloudbase.com`，首次无 sessionToken 时会附带 `wx.login` 的 `loginCode`，服务端配置小程序密钥后用 `jscode2session` 换 openid、签发短期 `sessionToken`，并在同一 local id 首次绑定 openid 时迁移旧档案和餐食；`callContainer` 仅在无 `wx.request` 能力时兜底；公网 `/healthz` 正常、空餐食列表返回 `records:[]`；未把数据库密码或小程序密钥写入仓库。
 
 ## 会话记录
 
@@ -306,3 +306,33 @@
   - 小程序发布前需要在微信公众平台/小程序后台把 `golang-24re-269724-9-1309913757.sh.run.tcloudbase.com` 加入 request 合法域名。
   - `project.config.json` 仍有微信开发者工具本地改动，本轮不纳入提交。
 - 下一步最佳动作：获得用户确认后清空开发者工具本地缓存，重新进入小程序，验证同一身份是否能从云端恢复档案和餐食。
+
+### Session 012
+
+- 日期：2026-06-12
+- 本轮目标：用户确认后继续清缓存恢复测试，并修复跨设备身份链路。
+- 已完成：
+  - 在微信开发者工具中执行“清除数据缓存”，再重新启动页面；结果证明只依赖本地 account id 时，清缓存后无法稳定恢复云端餐食。
+  - 尝试让前端优先走 `callContainer` 以获取云托管注入的微信身份；开发者工具基础库 3.16.1 下 `callContainer` 仍出现 `Error: timeout`，不能作为本地稳定调试主路径。
+  - 将前端云端请求改为：优先公网 HTTPS `wx.request`，无 `sessionToken` 时附带 `wx.login` 生成的 `loginCode`；`callContainer` 只在没有 `wx.request` 能力时兜底，避免开发者工具里反复撞容器 timeout。
+  - 将 Go 后端改为：配置 `WECHAT_APP_SECRET` 或 `WECHAT_SECRET` 后，使用 `jscode2session` 将 `loginCode` 换成 openid，再以 openid 作为账户主键，并签发短期 `sessionToken` 给后续请求复用；未配置密钥时仍回退本地 id，保证当前开发流程不直接坏掉。
+  - 新增 `Store.MigrateLocalAccount`，当同一 local id 第一次绑定 openid 时，把旧 `local:*` 账号下的 profile 和 meal records 迁到 `openid:*`，避免身份升级后看不到此前已保存的云端数据。
+  - 移除 `app.js` 启动时的云端账户同步，云端请求改为页面按需触发，减少开发者工具启动阶段的无意义请求。
+  - 更新 README 和 smoke test，明确小程序密钥只通过环境变量配置，不能写入仓库。
+- 运行过的验证：
+  - `pwd`
+  - `git log --oneline -5`
+  - `./harness/init.sh`：开工基线通过。
+  - 微信开发者工具：清除数据缓存后能复现恢复不完整；`callContainer` 路径出现 `Error: timeout`。
+  - 微信开发者工具：本轮改动后首页稳定渲染、不白屏；启动云同步已移除，但基础库仍会出现一条 `Error: timeout`，当前判断落在 `wx.login`/开发者工具身份环境，需要部署新后端并配置 AppSecret 后复测。
+  - `./harness/init.sh`：修复后通过，内部执行 npm smoke 和 Go 单测；Go 单测包含不占端口的 `jscode2session` fake transport、sessionToken 签名校验；smoke 覆盖 `MigrateLocalAccount`、sessionToken 和餐食归并 SQL。
+- 已记录证据：`harness/feature_list.json` 中 `wx-005` 新增清缓存失败原因、`wx.login`/sessionToken 身份链路修复、local 到 openid 迁移和部署前置条件；本日志当前条目。
+- 提交记录：本轮收尾提交使用 `Add wx login identity recovery`
+- 更新过的文件或工件：`utils/cloud.js`、`server/config.go`、`server/handlers.go`、`server/main.go`、`server/models.go`、`server/store.go`、`server/main_test.go`、`server/README.md`、`tests/smoke.js`、`harness/feature_list.json`、`harness/claude-progress.md`、`harness/quality-document.md`、`harness/session-handoff.md`
+- 已知风险或未解决问题：
+  - 云端当前部署版本尚未包含 `loginCode` / `jscode2session` 修复。
+  - 云托管服务需要配置小程序 AppSecret：`WECHAT_APP_SECRET` 或 `WECHAT_SECRET`；否则后端只能继续回退本地 id，清缓存恢复仍不能通过。
+  - 微信开发者工具基础库 3.16.1 仍会在 `wx.login`/身份请求附近打出 `Error: timeout`；代码已做本地兜底，但真实恢复必须以部署后端 + AppSecret 后的复测为准。
+  - 小程序发布前仍需要在微信公众平台/小程序后台把公网域名加入 request 合法域名。
+  - `project.config.json` 仍有微信开发者工具本地改动，本轮不纳入提交。
+- 下一步最佳动作：推送代码后，在云托管配置 `WECHAT_APP_SECRET` 并重新部署；随后重新做建档 -> 保存餐食 -> 清除数据缓存 -> 冷启动恢复验证。
