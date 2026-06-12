@@ -1,13 +1,15 @@
 {
   "pages": [
     "pages/onboarding/index",
-    "pages/dashboard/index"
+    "pages/dashboard/index",
+    "pages/upload/index"
   ],
   "window": {
-    "navigationBarBackgroundColor": "#f7fbf6",
+    "navigationBarBackgroundColor": "#ffe3d0",
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "每日热量管家",
-    "backgroundColor": "#f7fbf6"
+    "backgroundColor": "#ffe3d0",
+    "navigationStyle": "custom"
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json"

@@ -1,0 +1,56 @@
+<view class="screen">
+  <view class="statusbar">
+    <text>9:41</text>
+    <text>● ● ●　🔋</text>
+  </view>
+  <view class="pad" style="padding-top:8px">
+    <view class="h1">记录午餐 🍽️</view>
+    <view class="sub">拍张照，卡卡帮你算热量~</view>
+    <view class="cam">
+      <view class="ci">📸</view>
+      <view>点我拍食物</view>
+    </view>
+    <view class="fi">
+      <view class="e">🍗</view>
+      <view class="info">
+        <view class="n">鸡胸肉</view>
+        <view class="p">165 kcal / 100g</view>
+      </view>
+      <view class="qty">
+        <button class="qbtn">−</button>
+        <text class="qv">150g</text>
+        <button class="qbtn">+</button>
+      </view>
+    </view>
+    <view class="fi">
+      <view class="e">🍚</view>
+      <view class="info">
+        <view class="n">糙米饭</view>
+        <view class="p">112 kcal / 100g</view>
+      </view>
+      <view class="qty">
+        <button class="qbtn">−</button>
+        <text class="qv">200g</text>
+        <button class="qbtn">+</button>
+      </view>
+    </view>
+    <view class="fi">
+      <view class="e">🥦</view>
+      <view class="info">
+        <view class="n">西兰花</view>
+        <view class="p">34 kcal / 100g</view>
+      </view>
+      <view class="qty">
+        <button class="qbtn">−</button>
+        <text class="qv">100g</text>
+        <button class="qbtn">+</button>
+      </view>
+    </view>
+    <view class="total">
+      <view class="tl">这一餐总共 🔥</view>
+      <view class="tv">560</view>
+    </view>
+    <button class="btn" bindtap="saveMeal">存好啦 ✓</button>
+    <view style="height:30px"></view>
+  </view>
+</view>

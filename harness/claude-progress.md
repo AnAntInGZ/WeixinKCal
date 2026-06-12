@@ -6,7 +6,7 @@
 - 标准启动路径：`./harness/init.sh`；需要预览界面时，用微信开发者工具打开仓库根目录。`npm run dev` 会打印这条启动提示。
 - 标准验证路径：`./harness/init.sh`
 - 当前最高优先级未完成功能：`wx-002` 记录每日每餐饮食
-- 当前 blocker：无。已知未验证项：尚未用微信开发者工具或真机人工预览。
+- 当前 blocker：无。已知未验证项：活力橙 UI 已按 HTML 转为小程序页面并通过 smoke test，但尚未用微信开发者工具或真机人工截图比对。
 
 ## 会话记录
 
@@ -58,3 +58,30 @@
   - 当前账户是本地 storage 账户，不是微信登录或云端账户。
   - 每日建议热量是初版估算：Mifflin-St Jeor BMR、活动系数、目标系数；后续可按用户偏好调整。
 - 下一步最佳动作：开始 `wx-002`，实现按日期/餐次记录饮食，并把记录持久化到本地 storage。
+
+### Session 003
+
+- 日期：2026-06-12
+- 本轮目标：严格按照 `/Users/bytedance/Downloads/style4-vibrant-orange.html` 复刻第一版 UI，不加入额外设计。
+- 已完成：
+  - 读取用户提供的 HTML 模板，确认其包含注册、首页、上传三张手机稿。
+  - 将 `app.wxss` 改为模板的活力橙视觉系统，包括颜色、渐变、圆角、阴影、字号和组件类名。
+  - 将 `pages/onboarding/index` 改为注册手机稿：卡卡橙子 mascot、性别 pill、身高体重卡片、目标 pill、开启计划按钮。
+  - 将 `pages/dashboard/index` 改为首页手机稿：早安区、剩余热量 hero、营养 chips、今日餐食、底部 tabbar。
+  - 新增 `pages/upload/index` 对应上传手机稿：拍照区、三条食物项、数量按钮、餐食总热量、保存按钮。
+  - 更新 `tests/smoke.js`，覆盖三页存在、模板关键文案和样式令牌。
+- 运行过的验证：
+  - `pwd`
+  - `git log --oneline -5`
+  - `git status --short`
+  - `./harness/init.sh`：开工基线通过。
+  - `npm test`：通过，输出 `smoke ok: vibrant orange UI, account registration, profile plan`。
+  - `./harness/init.sh`：通过，内部执行 `npm install` 和 `npm test`。
+- 已记录证据：`harness/feature_list.json` 中 `ui-001` evidence；本日志当前条目。
+- 提交记录：本轮收尾提交使用 `Replicate vibrant orange UI template`。
+- 更新过的文件或工件：`app.json`、`app.wxss`、`pages/onboarding/*`、`pages/dashboard/*`、`pages/upload/*`、`tests/smoke.js`、`harness/feature_list.json`、`harness/claude-progress.md`
+- 已知风险或未解决问题：
+  - 内置浏览器当前不可用，未完成自动截图对比。
+  - 未用微信开发者工具或真机做人工视觉比对。
+  - `project.config.json` 与 `project.private.config.json` 在本轮开始前已有微信开发者工具生成/修改痕迹，本轮保留不动。
+- 下一步最佳动作：用微信开发者工具打开项目做三页视觉核对；确认无误后继续 `wx-002`，实现真实每日餐食记录数据流。

@@ -51,8 +51,29 @@
       "notes": "当前版本先使用本地 storage 账户，不接入微信登录、云开发或自建后台。"
     },
     {
-      "id": "wx-002",
+      "id": "ui-001",
       "priority": 2,
+      "area": "ui",
+      "title": "按活力橙 HTML 模板复刻第一版 UI",
+      "user_visible_behavior": "小程序注册、首页和上传页面的视觉结构、文案、颜色、圆角、间距和静态展示内容严格复刻 `style4-vibrant-orange.html` 的三张手机稿。",
+      "status": "passing",
+      "verification": [
+        "运行 ./harness/init.sh。",
+        "确认 pages/onboarding/index 页面文案和结构对应 HTML 中的注册手机稿。",
+        "确认 pages/dashboard/index 页面文案和结构对应 HTML 中的首页手机稿。",
+        "确认 pages/upload/index 页面文案和结构对应 HTML 中的上传手机稿。",
+        "确认 smoke test 覆盖模板关键文案和样式令牌。"
+      ],
+      "evidence": [
+        "2026-06-12: 根据 `/Users/bytedance/Downloads/style4-vibrant-orange.html` 将注册、首页、上传三张手机稿转换为小程序页面：pages/onboarding/index、pages/dashboard/index、pages/upload/index。",
+        "2026-06-12: app.wxss 使用模板中的活力橙颜色、渐变、圆角、阴影、字号和组件类名；未加入额外视觉设计。",
+        "2026-06-12: ./harness/init.sh 通过，smoke test 输出 `smoke ok: vibrant orange UI, account registration, profile plan`。"
+      ],
+      "notes": "本轮只复刻用户提供的 HTML，不引入额外视觉设计；尚未用微信开发者工具人工截图比对。"
+    },
+    {
+      "id": "wx-002",
+      "priority": 3,
       "area": "meal-log",
       "title": "记录每日每餐饮食",
       "user_visible_behavior": "用户可以按日期记录早餐、午餐、晚餐或加餐，输入食物名称、分量和备注。",
@@ -68,7 +89,7 @@
     },
     {
       "id": "wx-003",
-      "priority": 3,
+      "priority": 4,
       "area": "calorie-estimation",
       "title": "估算餐食热量",
       "user_visible_behavior": "用户输入食物和分量后，程序能给出热量估算，并允许用户手动修正。",
@@ -84,7 +105,7 @@
     },
     {
       "id": "wx-004",
-      "priority": 4,
+      "priority": 5,
       "area": "daily-progress",
       "title": "判断每日热量达标情况",
       "user_visible_behavior": "用户在首页看到当天已摄入热量、目标热量、剩余热量和是否达标。",
@@ -100,7 +121,7 @@
     },
     {
       "id": "wx-005",
-      "priority": 5,
+      "priority": 6,
       "area": "account-sync",
       "title": "升级账户为跨设备可恢复账户",
       "user_visible_behavior": "用户更换设备或重新进入小程序后，仍可恢复自己的身体信息和饮食记录。",

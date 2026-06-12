@@ -1,43 +1,86 @@
-<view class="page dashboard-page" wx:if="{{profile}}">
-  <view class="eyebrow">今日目标</view>
-  <view class="title">{{profile.plan.dailyCalories}} 千卡</view>
-  <view class="subtitle">根据你的身体信息、活动量和“{{profile.goalLabel}}”目标估算。之后记录餐食时，这里会汇总今日摄入。</view>
-
-  <view class="section metric-grid">
-    <view class="metric">
-      <view class="metric-label">BMI</view>
-      <view class="metric-value">{{profile.plan.bmi}}</view>
-      <view class="metric-note">{{profile.plan.bmiLabel}}</view>
-    </view>
-    <view class="metric">
-      <view class="metric-label">基础代谢</view>
-      <view class="metric-value">{{profile.plan.bmr}}</view>
-      <view class="metric-note">千卡/日</view>
-    </view>
+<view class="screen">
+  <view class="statusbar">
+    <text>9:41</text>
+    <text>● ● ●　🔋</text>
   </view>
-
-  <view class="section panel profile-panel">
-    <view class="panel-title">建档信息</view>
-    <view class="info-row">
-      <text>性别</text>
-      <text>{{profile.genderLabel}}</text>
+  <view class="pad" style="padding-top:6px">
+    <view style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <view>
+        <view class="sub">早上好呀 ☀️</view>
+        <view class="h1">今天吃得不错！</view>
+      </view>
+      <view style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#ff8a3d,#ff5c7c);display:flex;align-items:center;justify-content:center;font-size:24px">😋</view>
     </view>
-    <view class="info-row">
-      <text>年龄</text>
-      <text>{{profile.age}} 岁</text>
+    <view class="hero">
+      <view class="hero-fire">🔥</view>
+      <view class="lab">还可以吃 🍽️</view>
+      <view class="big">612</view>
+      <view class="small">已摄入 1238 / 目标 1850 kcal</view>
+      <view class="pbar">
+        <view class="fill" style="width:66%"></view>
+      </view>
     </view>
-    <view class="info-row">
-      <text>身高 / 体重</text>
-      <text>{{profile.heightCm}} cm / {{profile.weightKg}} kg</text>
+    <view class="chips">
+      <view class="chip">
+        <view class="e">🍞</view>
+        <view class="v">130g</view>
+        <view class="k">碳水</view>
+      </view>
+      <view class="chip">
+        <view class="e">🥩</view>
+        <view class="v">60g</view>
+        <view class="k">蛋白</view>
+      </view>
+      <view class="chip">
+        <view class="e">🥑</view>
+        <view class="v">24g</view>
+        <view class="k">脂肪</view>
+      </view>
     </view>
-    <view class="info-row">
-      <text>活动量</text>
-      <text>{{profile.activityLabel}}</text>
+    <view class="sec">今日餐食 🍱</view>
+    <view class="meal">
+      <view class="ic" style="background:#fff0d6">🍳</view>
+      <view class="info">
+        <view class="t">早餐</view>
+        <view class="d">面包 · 鸡蛋 · 牛奶</view>
+      </view>
+      <view class="kc">420</view>
     </view>
+    <view class="meal">
+      <view class="ic" style="background:#e6f7ea">🥗</view>
+      <view class="info">
+        <view class="t">午餐</view>
+        <view class="d">鸡胸沙拉 · 糙米饭</view>
+      </view>
+      <view class="kc">560</view>
+    </view>
+    <view class="meal">
+      <view class="ic" style="background:#ffe6ec">🍎</view>
+      <view class="info">
+        <view class="t">加餐</view>
+        <view class="d">苹果 · 无糖酸奶</view>
+      </view>
+      <view class="kc">258</view>
+    </view>
+    <view style="height:100px"></view>
   </view>
-
-  <view class="section panel empty-meals">
-    <view class="panel-title">饮食记录</view>
-    <view class="muted">下一步会加入每日每餐记录；现在先完成账户和身体信息建档。</view>
+  <view class="tabbar">
+    <view class="tab on">
+      <text class="i">🏠</text>
+      <text>首页</text>
+    </view>
+    <view class="tab">
+      <text class="i">📊</text>
+      <text>统计</text>
+    </view>
+    <view class="fab" bindtap="goUpload">+</view>
+    <view class="tab">
+      <text class="i">🥗</text>
+      <text>食谱</text>
+    </view>
+    <view class="tab">
+      <text class="i">😺</text>
+      <text>我的</text>
+    </view>
   </view>
 </view>

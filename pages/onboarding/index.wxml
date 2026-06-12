@@ -1,48 +1,45 @@
-<view class="page onboarding-page">
-  <view class="eyebrow">首次建档</view>
-  <view class="title">先了解你的身体状态</view>
-  <view class="subtitle">这些信息会保存在本机账户里，用来估算 BMI 和每日建议热量。估算结果只作为日常记录参考。</view>
-
-  <form class="section panel form" bindsubmit="handleSubmit">
-    <view class="field">
-      <view class="field-label">性别</view>
-      <picker mode="selector" range="{{genderLabels}}" value="{{genderIndex}}" bindchange="handleGenderChange">
-        <view class="picker-value">{{genderLabels[genderIndex]}}</view>
-      </picker>
+<view class="screen">
+  <view class="statusbar" style="color:#fff">
+    <text>9:41</text>
+    <text>● ● ●　🔋</text>
+  </view>
+  <view class="onb">
+    <view class="mascot">🍊</view>
+    <view class="onb-title">嗨，我是卡卡！</view>
+    <view class="p">
+      <text>告诉我你的小目标，</text>
+      <text>我帮你算好每天能吃多少~</text>
     </view>
-
-    <view class="field-row">
+    <view class="sheet">
       <view class="field">
-        <view class="field-label">年龄</view>
-        <input name="age" class="input" type="number" placeholder="例如 30" />
+        <text class="field-label">你的性别</text>
+        <view class="pill">
+          <text class="pill-item on">男生</text>
+          <text class="pill-item">女生</text>
+        </view>
       </view>
       <view class="field">
-        <view class="field-label">身高 cm</view>
-        <input name="heightCm" class="input" type="digit" placeholder="例如 170" />
+        <text class="field-label">身高 &amp; 体重</text>
+        <view class="inp">
+          <view class="box">
+            <view class="n">178</view>
+            <view class="u">身高 cm</view>
+          </view>
+          <view class="box">
+            <view class="n">74</view>
+            <view class="u">体重 kg</view>
+          </view>
+        </view>
+      </view>
+      <view class="field" style="margin-bottom:0">
+        <text class="field-label">想要达成</text>
+        <view class="goalpill">
+          <text class="goal-item on">减脂</text>
+          <text class="goal-item">减重</text>
+          <text class="goal-item">增肌</text>
+        </view>
       </view>
     </view>
-
-    <view class="field">
-      <view class="field-label">体重 kg</view>
-      <input name="weightKg" class="input" type="digit" placeholder="例如 65" />
-    </view>
-
-    <view class="field">
-      <view class="field-label">活动量</view>
-      <picker mode="selector" range="{{activityLabels}}" value="{{activityIndex}}" bindchange="handleActivityChange">
-        <view class="picker-value">{{activityLabels[activityIndex]}}</view>
-      </picker>
-    </view>
-
-    <view class="field">
-      <view class="field-label">当前目标</view>
-      <picker mode="selector" range="{{goalLabels}}" value="{{goalIndex}}" bindchange="handleGoalChange">
-        <view class="picker-value">{{goalLabels[goalIndex]}}</view>
-      </picker>
-    </view>
-
-    <view wx:if="{{error}}" class="error">{{error}}</view>
-
-    <button class="button-primary" form-type="submit">生成我的每日热量目标</button>
-  </form>
+    <button class="btn btn-white" bindtap="startPlan">开启计划 🚀</button>
+  </view>
 </view>

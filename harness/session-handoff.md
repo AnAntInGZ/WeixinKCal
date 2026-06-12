@@ -2,26 +2,26 @@
 
 ## 当前已验证
 
-- 现在明确可用的部分：原生微信小程序骨架、首次本地账户创建、身体信息建档、BMI/BMR/每日建议热量计算、建档后首页读取展示。
-- 这轮实际跑过的验证：`npm test` 通过；`./harness/init.sh` 通过；`npm run dev` 通过并打印微信开发者工具打开提示。
+- 现在明确可用的部分：原生微信小程序骨架、首次本地账户创建、身体信息建档、BMI/BMR/每日建议热量计算；注册、首页、上传三页已按 `style4-vibrant-orange.html` 复刻。
+- 这轮实际跑过的验证：`npm test` 通过；`./harness/init.sh` 通过。
 
 ## 本轮改动
 
-- 新增了哪些代码或行为：新增 `pages/onboarding` 建档页、`pages/dashboard` 首页、`utils/account.js`、`utils/profile.js`、`utils/health.js`、`utils/options.js`。
-- 基础设施或 harness 发生了哪些变化：新增 `package.json`/`package-lock.json` 和 `tests/smoke.js`；`feature_list.json` 改为饮食热量管理小程序路线；`CONTEXT.md` 增加产品术语；`quality-document.md` 更新质量快照。
+- 新增了哪些代码或行为：`pages/onboarding`、`pages/dashboard` 改为活力橙模板 UI；新增 `pages/upload` 上传页；底部加号可进入上传页。
+- 基础设施或 harness 发生了哪些变化：`tests/smoke.js` 增加模板关键文案和样式令牌检查；`feature_list.json` 增加并完成 `ui-001`。
 
 ## 仍损坏或未验证
 
 - 已知缺陷：暂无已复现缺陷。
-- 未验证路径：未用微信开发者工具或真机人工预览 UI。
-- 下一轮会话需要注意的风险：当前账号和档案仅在本地 storage；每日建议热量公式是初版估算，不等同医疗建议。
+- 未验证路径：未用微信开发者工具或真机人工截图比对 UI。
+- 下一轮会话需要注意的风险：当前 UI 优先静态复刻模板；真实餐食记录数据流仍属于 `wx-002`。
 
 ## 下一步最佳动作
 
 - 最高优先级未完成功能：`wx-002` 记录每日每餐饮食。
-- 为什么它是下一步：热量目标已经能生成，下一步需要有用户每日摄入数据。
+- 为什么它是下一步：活力橙 UI 已复刻，下一步需要把上传页接入真实餐食记录数据。
 - 什么结果才算 passing：用户能新增餐食记录，记录按日期/餐次持久化，首页或记录页能读取显示，并有 smoke test 证据。
-- 这一步中哪些东西不要动：不要改弱 `tests/smoke.js`；不要把 `wx-001` 改回 in_progress；不要引入云端账户，除非先确认方案。
+- 这一步中哪些东西不要动：不要偏离 `style4-vibrant-orange.html` 的视觉；不要改弱 `tests/smoke.js`；不要引入云端账户，除非先确认方案。
 
 ## 命令
 

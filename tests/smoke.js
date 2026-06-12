@@ -40,7 +40,8 @@ function verifyMiniProgramShape() {
   const appConfig = readJson('app.json')
   assert.deepStrictEqual(appConfig.pages, [
     'pages/onboarding/index',
-    'pages/dashboard/index'
+    'pages/dashboard/index',
+    'pages/upload/index'
   ])
 
   for (const page of appConfig.pages) {
@@ -57,6 +58,62 @@ function verifyMiniProgramShape() {
   for (const jsFile of walk(root, (file) => file.endsWith('.js'))) {
     execFileSync(process.execPath, ['--check', jsFile], { stdio: 'pipe' })
   }
+}
+
+function assertFileContains(relativePath, snippets) {
+  const content = fs.readFileSync(path.join(root, relativePath), 'utf8')
+  for (const snippet of snippets) {
+    assert.ok(
+      content.includes(snippet),
+      `${relativePath} should contain ${snippet}`
+    )
+  }
+}
+
+function verifyVibrantOrangeReplica() {
+  assertFileContains('app.wxss', [
+    '#ff8a3d',
+    '#ff5c7c',
+    '#ffb347',
+    '#6a5cff',
+    '#fff6ee',
+    'border-radius: 32px',
+    'box-shadow: 0 12px 24px rgba(255, 92, 124, .4)'
+  ])
+
+  assertFileContains('pages/onboarding/index.wxml', [
+    '嗨，我是卡卡！',
+    '告诉我你的小目标，',
+    '我帮你算好每天能吃多少~',
+    '男生',
+    '女生',
+    '178',
+    '74',
+    '开启计划 🚀'
+  ])
+
+  assertFileContains('pages/dashboard/index.wxml', [
+    '早上好呀 ☀️',
+    '今天吃得不错！',
+    '还可以吃 🍽️',
+    '612',
+    '已摄入 1238 / 目标 1850 kcal',
+    '今日餐食 🍱',
+    '面包 · 鸡蛋 · 牛奶',
+    '鸡胸沙拉 · 糙米饭',
+    '苹果 · 无糖酸奶'
+  ])
+
+  assertFileContains('pages/upload/index.wxml', [
+    '记录午餐 🍽️',
+    '拍张照，卡卡帮你算热量~',
+    '点我拍食物',
+    '鸡胸肉',
+    '糙米饭',
+    '西兰花',
+    '这一餐总共 🔥',
+    '存好啦 ✓'
+  ])
 }
 
 function verifyFirstRunAccountAndProfile() {
@@ -95,6 +152,7 @@ function verifyFirstRunAccountAndProfile() {
 }
 
 verifyMiniProgramShape()
+verifyVibrantOrangeReplica()
 verifyFirstRunAccountAndProfile()
 
-console.log('smoke ok: mini program shape, account registration, profile plan')
+console.log('smoke ok: vibrant orange UI, account registration, profile plan')
