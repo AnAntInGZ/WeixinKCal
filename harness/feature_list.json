@@ -176,9 +176,10 @@
       "evidence": [
         "2026-06-12: 新增 server/ Go 云托管服务，包含账户、身体档案、餐食记录、按日汇总 API，以及 MySQL 建库建表和持久化逻辑；server/go test ./... 通过。",
         "2026-06-12: 新增小程序端 utils/cloud.js，使用 resourceEnv=prod-d8ghbq8xea378972b 和 X-WX-SERVICE=golang-24re-001 通过 callContainer 调用云托管；启动同步账户、建档保存/恢复、首页按日拉取、餐食保存均已接入，并保留本地兜底。",
-        "2026-06-12: ./harness/init.sh 通过，内部执行 npm test 和 server/go test ./...；smoke test 覆盖云托管配置、前端调用入口和 Go 服务骨架。"
+        "2026-06-12: ./harness/init.sh 通过，内部执行 npm test 和 server/go test ./...；smoke test 覆盖云托管配置、前端调用入口和 Go 服务骨架。",
+        "2026-06-12: 阅读微信云托管 quickstart、Go 自定义部署和小程序访问云托管服务官方文档后，按文档补齐 wx.cloud.init({}) 初始化和 wx.cloud.callContainer({ config: { env } }) 兜底调用；微信开发者工具确认基础库 3.16.1、页面渲染正常，但云调用仍返回 Invalid host，说明云托管服务入口尚未部署或未就绪。"
       ],
-      "notes": "已确认方案为微信云托管 Go 服务 + 绑定 MySQL；代码和本地验证已完成，但尚未部署到云托管并用同一微信身份完成清空本地缓存后的云端恢复验证，所以不能标记 passing。"
+      "notes": "已确认方案为微信云托管 Go 服务 + 绑定 MySQL；代码和本地验证已完成，但尚未部署到云托管并用同一微信身份完成清空本地缓存后的云端恢复验证，所以不能标记 passing。云托管控制台需要通过浏览器手动上传 server/ 目录；本轮 Computer Use 在 cloud.weixin.qq.com 控制台 URL 被安全策略阻止，未能代执行部署。"
     },
     {
       "id": "wx-006",

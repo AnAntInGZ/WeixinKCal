@@ -267,14 +267,18 @@ function verifyCloudBackendWiring() {
   assert.strictEqual(cloud.CLOUD_SERVICE_NAME, 'golang-24re-001')
 
   assertFileContains('utils/cloud.js', [
+    'wx.cloud.init',
     'wx.cloud.Cloud',
     'callContainer',
+    'config:',
+    'env: CLOUD_RESOURCE_ENV',
     'X-WX-SERVICE',
     '/api/account',
     '/api/profile',
     '/api/meals'
   ])
   assertFileContains('app.js', [
+    'initWxCloud',
     'syncCloudAccount',
     'mergeCloudAccount'
   ])

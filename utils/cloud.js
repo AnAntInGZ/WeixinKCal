@@ -3,14 +3,28 @@ const CLOUD_SERVICE_NAME = 'golang-24re-001'
 
 let cloudInstance = null
 let initPromise = null
+let wxCloudInitPromise = null
 
 function canUseCloud() {
-  return typeof wx !== 'undefined' && wx.cloud && wx.cloud.Cloud
+  return typeof wx !== 'undefined' && wx.cloud
+}
+
+function initWxCloud() {
+  if (!canUseCloud()) {
+    return Promise.reject(new Error('当前环境不支持云托管'))
+  }
+
+  if (!wxCloudInitPromise) {
+    const initResult = wx.cloud.init ? wx.cloud.init({}) : null
+    wxCloudInitPromise = initResult && initResult.then ? initResult : Promise.resolve()
+  }
+
+  return wxCloudInitPromise
 }
 
 function getCloudInstance() {
-  if (!canUseCloud()) {
-    return Promise.reject(new Error('当前环境不支持云托管'))
+  if (!canUseCloud() || !wx.cloud.Cloud) {
+    return Promise.reject(new Error('当前环境不支持 Cloud 实例'))
   }
 
   if (!cloudInstance) {
@@ -44,8 +58,8 @@ function parseResponseData(data) {
 }
 
 async function callCloud(path, data = {}, method = 'POST') {
-  const cloud = await getCloudInstance()
-  const response = await cloud.callContainer({
+  await initWxCloud()
+  const request = {
     path,
     method,
     data,
@@ -53,7 +67,24 @@ async function callCloud(path, data = {}, method = 'POST') {
       'X-WX-SERVICE': CLOUD_SERVICE_NAME,
       'content-type': 'application/json'
     }
-  })
+  }
+  let response
+
+  try {
+    const cloud = await getCloudInstance()
+    response = await cloud.callContainer(request)
+  } catch (error) {
+    if (!wx.cloud.callContainer) {
+      throw error
+    }
+    response = await wx.cloud.callContainer({
+      ...request,
+      config: {
+        env: CLOUD_RESOURCE_ENV
+      }
+    })
+  }
+
   const body = parseResponseData(response.data)
 
   if (response.statusCode && response.statusCode >= 400) {
@@ -107,6 +138,7 @@ module.exports = {
   callCloud,
   fetchCloudDaily,
   fetchCloudProfile,
+  initWxCloud,
   normalizeAccount,
   saveCloudMeal,
   saveCloudProfile,

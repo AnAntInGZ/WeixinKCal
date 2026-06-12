@@ -6,7 +6,7 @@
 - 标准启动路径：`./harness/init.sh`；需要预览界面时，用微信开发者工具打开仓库根目录。`npm run dev` 会打印这条启动提示。
 - 标准验证路径：`./harness/init.sh`
 - 当前最高优先级未完成功能：`wx-005` 升级账户为跨设备可恢复账户；云托管 Go 服务和小程序端 callContainer 接入已完成本地验证，仍需部署后做清缓存恢复验证。
-- 当前 blocker：`wx-005` 还没有在微信云托管上完成部署和云端端到端验证；`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作。
+- 当前 blocker：`wx-005` 还没有在微信云托管上完成部署和云端端到端验证；本地尝试进入 `cloud.weixin.qq.com/cloudrun/console` 时 Computer Use 被该 URL 的安全策略阻止，部署需要用户手动操作控制台或提供可用的非浏览器部署方式；`wx-006` 云端上传发布需要用户确认版本号、上传描述和最终上传动作。
 - 移动端 UI 当前状态：微信开发者工具 iPhone 12/13 85% 下，首页和记录页不需要整页拖动；记录页主操作都在首屏；食物数字输入不截断；保存后可回到首页。
 - 云端数据当前状态：新增 `server/` Go 服务，按微信云托管模板监听 HTTP，使用 MySQL 环境变量建库建表；小程序端使用 `resourceEnv=prod-d8ghbq8xea378972b` 与 `X-WX-SERVICE=golang-24re-001` 调用云托管，未把数据库密码写入仓库。
 
@@ -204,3 +204,26 @@
   - 本地没有直接连接云托管内网 MySQL；数据库连通性只能在云托管运行环境内验证。
   - 微信开发者工具本地文件 `project.config.json` / `project.private.config.json` 仍有未提交改动，本轮不纳入提交。
 - 下一步最佳动作：把 `server/` 作为 Go 服务部署到微信云托管，配置 MySQL 环境变量后，用微信开发者工具跑建档 -> 记录餐食 -> 清缓存 -> 重新进入恢复数据的验证。
+
+### Session 008
+
+- 日期：2026-06-12
+- 本轮目标：阅读微信云托管快速入门文档，用微信开发者工具做前后端联调，并尝试把 Go 后端发布到云托管。
+- 已完成：
+  - 阅读官方云托管 quickstart、Go 自定义部署、小程序访问云托管服务文档；确认当前后端应按“手动上传代码包/文件夹”上传 `server/` 目录。
+  - 将小程序云端调用补齐为先 `wx.cloud.init({})`，再优先使用 `wx.cloud.Cloud({ resourceEnv })`，失败时兜底为 `wx.cloud.callContainer({ config: { env }, header: { X-WX-SERVICE } })`。
+  - 用微信开发者工具确认正式 AppID 下页面渲染正常，基础库为 3.16.1，页面不白屏；云端调用返回 `Invalid host`，符合后端服务未部署或入口未就绪的状态。
+  - 新增 `.gitignore`，避免 `project.private.config.json` 被误提交。
+- 运行过的验证：
+  - `pwd`
+  - `git log --oneline -5`
+  - `./harness/init.sh`：开工基线通过，内部执行 npm smoke 和 Go 单测。
+  - 微信开发者工具：`pages/dashboard/index` 正常渲染；控制台显示 `cloud.callContainer:fail ... Invalid host`。
+- 已记录证据：`harness/feature_list.json` 中 `wx-005` 新增官方文档对齐和 DevTools 联调证据；本日志当前条目。
+- 提交记录：本轮收尾提交使用 `Align WeChat Cloud Run calls`。
+- 更新过的文件或工件：`app.js`、`utils/cloud.js`、`tests/smoke.js`、`.gitignore`、`harness/feature_list.json`、`harness/claude-progress.md`、`harness/session-handoff.md`
+- 已知风险或未解决问题：
+  - 还没有实际部署 `server/` 到微信云托管；Computer Use 在 `cloud.weixin.qq.com/cloudrun/console` URL 上被安全策略阻止，不能代操作控制台。
+  - 当前 Git 仓库没有配置 `origin`，且本机没有 `gh`，无法直接推送到 GitHub；需要用户提供 GitHub 仓库 URL，或确认安装 `gh` 并创建/绑定仓库。
+  - `project.config.json` 是微信开发者工具本地 AppID/编译配置改动，本轮仍不纳入提交；`project.private.config.json` 已加入忽略规则。
+- 下一步最佳动作：拿到 GitHub 远端 URL 后配置 `origin` 并 push；随后用户在云托管控制台上传 `server/` 目录，配置 MySQL 环境变量并发布。
