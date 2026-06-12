@@ -1,0 +1,30 @@
+.metric-note {
+  margin-top: 8rpx;
+  color: #667067;
+  font-size: 24rpx;
+}
+
+.panel-title {
+  margin-bottom: 20rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+  border-top: 1rpx solid #edf2ed;
+  padding: 20rpx 0;
+  color: #3f4a41;
+  font-size: 28rpx;
+}
+
+.info-row:first-of-type {
+  border-top: 0;
+}
+
+.empty-meals {
+  line-height: 1.6;
+}

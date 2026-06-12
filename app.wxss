@@ -1,0 +1,79 @@
+page {
+  min-height: 100%;
+  background: #f7fbf6;
+  color: #1b1f1a;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 40rpx 32rpx 56rpx;
+}
+
+.eyebrow {
+  color: #4c7a59;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.title {
+  margin-top: 12rpx;
+  font-size: 48rpx;
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.subtitle {
+  margin-top: 16rpx;
+  color: #667067;
+  font-size: 28rpx;
+  line-height: 1.55;
+}
+
+.section {
+  margin-top: 32rpx;
+}
+
+.panel {
+  border: 1rpx solid #d8e3d9;
+  border-radius: 8rpx;
+  background: #ffffff;
+  padding: 28rpx;
+}
+
+.button-primary {
+  margin-top: 32rpx;
+  border-radius: 8rpx;
+  background: #2e6b43;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.muted {
+  color: #667067;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20rpx;
+}
+
+.metric {
+  border: 1rpx solid #d8e3d9;
+  border-radius: 8rpx;
+  background: #ffffff;
+  padding: 24rpx;
+}
+
+.metric-label {
+  color: #667067;
+  font-size: 24rpx;
+}
+
+.metric-value {
+  margin-top: 10rpx;
+  font-size: 40rpx;
+  font-weight: 700;
+}

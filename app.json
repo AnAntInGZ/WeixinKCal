@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "pages/onboarding/index",
+    "pages/dashboard/index"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#f7fbf6",
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "每日热量管家",
+    "backgroundColor": "#f7fbf6"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

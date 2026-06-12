@@ -1,0 +1,40 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20rpx;
+}
+
+.field-label {
+  margin-bottom: 12rpx;
+  color: #3f4a41;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.input,
+.picker-value {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 88rpx;
+  border: 1rpx solid #d2ded4;
+  border-radius: 8rpx;
+  background: #f9fcf8;
+  padding: 0 22rpx;
+  color: #1b1f1a;
+  font-size: 30rpx;
+  line-height: 88rpx;
+}
+
+.error {
+  border-radius: 8rpx;
+  background: #fff0ed;
+  color: #ba3b28;
+  padding: 18rpx 20rpx;
+  font-size: 26rpx;
+}

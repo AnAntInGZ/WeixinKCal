@@ -27,54 +27,92 @@
       "evidence": [
         "2026-06-12: 新增 harness/CONTEXT.md，按 grill-with-docs 的 context 概念记录项目术语；./harness/init.sh 通过。"
       ],
-      "notes": "本项是用户指定的沟通对齐文档，不改变 chat 功能的后续优先级。"
+      "notes": "本项是用户指定的沟通对齐文档。"
     },
     {
-      "id": "chat-001",
+      "id": "wx-001",
       "priority": 1,
-      "area": "chat",
-      "title": "创建新会话",
-      "user_visible_behavior": "用户点击 New Chat 后，可以看到一个新的空白对话。",
-      "status": "not_started",
+      "area": "onboarding",
+      "title": "首次打开自动注册并完成身体信息建档",
+      "user_visible_behavior": "用户首次打开小程序时会自动获得一个本地账户；如果尚未填写身体信息，会看到建档表单，提交性别、年龄、身高、体重、活动量和目标后进入首页，并看到 BMI 与每日建议热量。",
+      "status": "passing",
       "verification": [
-        "打开应用。",
-        "点击 New Chat。",
-        "确认侧边栏出现一个新会话。",
-        "确认主面板显示空白对话状态。"
+        "运行 ./harness/init.sh。",
+        "确认 app.json 配置了小程序页面路径。",
+        "用 smoke test 模拟空本地存储启动，确认会创建账户。",
+        "用 smoke test 提交身体信息，确认 BMI 和每日建议热量被计算并持久化。",
+        "确认建档完成后首页可以读取并展示用户目标。"
       ],
-      "evidence": [],
-      "notes": ""
+      "evidence": [
+        "2026-06-12: 新增原生微信小程序骨架 app.json/app.js/app.wxss/project.config.json，页面路径包含 pages/onboarding/index 和 pages/dashboard/index。",
+        "2026-06-12: 新增本地账户与身体信息建档数据层；smoke test 模拟空 storage 后 ensureAccount 创建本地账户，createProfile 计算 BMI=22、dailyCalories=1550 并持久化。",
+        "2026-06-12: ./harness/init.sh 通过，内部执行 npm install 与 npm test；npm run dev 通过并提示用微信开发者工具打开项目。"
+      ],
+      "notes": "当前版本先使用本地 storage 账户，不接入微信登录、云开发或自建后台。"
     },
     {
-      "id": "chat-002",
+      "id": "wx-002",
       "priority": 2,
-      "area": "chat",
-      "title": "在当前会话里发送消息",
-      "user_visible_behavior": "用户提交一条消息后，可以在当前线程中看到它。",
+      "area": "meal-log",
+      "title": "记录每日每餐饮食",
+      "user_visible_behavior": "用户可以按日期记录早餐、午餐、晚餐或加餐，输入食物名称、分量和备注。",
       "status": "not_started",
       "verification": [
-        "打开一个已有会话。",
-        "在输入框中输入消息。",
-        "提交消息。",
-        "确认线程中出现这条新消息。"
+        "打开首页。",
+        "进入添加饮食记录。",
+        "新增一条餐食。",
+        "回到当日记录列表，确认该餐食显示并被持久化。"
       ],
       "evidence": [],
       "notes": ""
     },
     {
-      "id": "chat-003",
+      "id": "wx-003",
       "priority": 3,
-      "area": "chat",
-      "title": "持久化保存会话列表",
-      "user_visible_behavior": "应用重启后，用户仍能看到之前创建的会话。",
+      "area": "calorie-estimation",
+      "title": "估算餐食热量",
+      "user_visible_behavior": "用户输入食物和分量后，程序能给出热量估算，并允许用户手动修正。",
       "status": "not_started",
       "verification": [
-        "创建两个会话。",
-        "重启应用。",
-        "确认两个会话仍显示在侧边栏中。"
+        "新增一条包含食物和分量的餐食。",
+        "确认系统生成热量估算。",
+        "手动修改热量。",
+        "确认当日总热量使用修正后的值。"
+      ],
+      "evidence": [],
+      "notes": "后续需确认使用内置食物库、外部 API，还是纯手动估算。"
+    },
+    {
+      "id": "wx-004",
+      "priority": 4,
+      "area": "daily-progress",
+      "title": "判断每日热量达标情况",
+      "user_visible_behavior": "用户在首页看到当天已摄入热量、目标热量、剩余热量和是否达标。",
+      "status": "not_started",
+      "verification": [
+        "设置一个已建档用户。",
+        "添加多条当天餐食。",
+        "确认首页汇总当天总热量。",
+        "确认达标状态随总热量变化。"
       ],
       "evidence": [],
       "notes": ""
+    },
+    {
+      "id": "wx-005",
+      "priority": 5,
+      "area": "account-sync",
+      "title": "升级账户为跨设备可恢复账户",
+      "user_visible_behavior": "用户更换设备或重新进入小程序后，仍可恢复自己的身体信息和饮食记录。",
+      "status": "not_started",
+      "verification": [
+        "完成微信登录或云端身份绑定。",
+        "在一个模拟用户身份下写入档案和餐食记录。",
+        "清空本地缓存后重新进入。",
+        "确认云端数据可恢复到本地。"
+      ],
+      "evidence": [],
+      "notes": "需要后续确认使用微信云开发、自建后台，还是其他数据服务。"
     }
   ]
 }

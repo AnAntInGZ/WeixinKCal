@@ -1,0 +1,48 @@
+<view class="page onboarding-page">
+  <view class="eyebrow">首次建档</view>
+  <view class="title">先了解你的身体状态</view>
+  <view class="subtitle">这些信息会保存在本机账户里，用来估算 BMI 和每日建议热量。估算结果只作为日常记录参考。</view>
+
+  <form class="section panel form" bindsubmit="handleSubmit">
+    <view class="field">
+      <view class="field-label">性别</view>
+      <picker mode="selector" range="{{genderLabels}}" value="{{genderIndex}}" bindchange="handleGenderChange">
+        <view class="picker-value">{{genderLabels[genderIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="field-row">
+      <view class="field">
+        <view class="field-label">年龄</view>
+        <input name="age" class="input" type="number" placeholder="例如 30" />
+      </view>
+      <view class="field">
+        <view class="field-label">身高 cm</view>
+        <input name="heightCm" class="input" type="digit" placeholder="例如 170" />
+      </view>
+    </view>
+
+    <view class="field">
+      <view class="field-label">体重 kg</view>
+      <input name="weightKg" class="input" type="digit" placeholder="例如 65" />
+    </view>
+
+    <view class="field">
+      <view class="field-label">活动量</view>
+      <picker mode="selector" range="{{activityLabels}}" value="{{activityIndex}}" bindchange="handleActivityChange">
+        <view class="picker-value">{{activityLabels[activityIndex]}}</view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <view class="field-label">当前目标</view>
+      <picker mode="selector" range="{{goalLabels}}" value="{{goalIndex}}" bindchange="handleGoalChange">
+        <view class="picker-value">{{goalLabels[goalIndex]}}</view>
+      </picker>
+    </view>
+
+    <view wx:if="{{error}}" class="error">{{error}}</view>
+
+    <button class="button-primary" form-type="submit">生成我的每日热量目标</button>
+  </form>
+</view>
